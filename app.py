@@ -25,6 +25,7 @@ def home():
 @app.route('/api/user/signup', methods=['POST'])
 def signup_user(): 
    user_role_title = request.json['role']
+   user_name = request.json['name']
    user_email = request.json['email']
    user_password = request.json['password']
    user_active = request.json['active']
@@ -45,7 +46,7 @@ def signup_user():
       hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
       
       cur = mysql.connection.cursor()
-      cur.callproc("spInsertNewUser", [user_role_title, user_email, hashed, user_active])
+      cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active])
       mysql.connection.commit()
       cur.close()
 
@@ -58,35 +59,35 @@ def login_user():
    user_email = request.json['email']
    user_password = request.json['password']  
 
-   # cur = mysql.connection.cursor()
-   # cur.callproc("spCheckEmailExist", ())
-   # emails = cur.fetchall()
-   # cur.close() 
-
-   # ban = False
-   # for row in emails:
-   #    if row['user_email'] == user_email:
-   #       ban = True
-   #       hash_password = row["user_password"]
-
-   # if ban:      
-   #    if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
    cur = mysql.connection.cursor()
-   cur.callproc("spLoginUser", [user_email, user_password])
-   user = cur.fetchall()
-   cur.close()
+   cur.callproc("spCheckEmailExist", ())
+   emails = cur.fetchall()
+   cur.close() 
 
-   return jsonify(user)         
-   #    else:
-   #       return "Email or password is wrong"
-   # else:
-   #    return "Email or password is wrong"
+   ban = False
+   for row in emails:
+      if row['user_email'] == user_email:
+         ban = True
+         hash_password = row["user_password"]
+
+   if ban:      
+      if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
+         cur = mysql.connection.cursor()
+         cur.callproc("spLoginUser", [user_email, user_password])
+         user = cur.fetchall()
+         cur.close()
+
+         return jsonify(user)         
+      else:
+         return "Email or password is wrong"
+   else:
+      return "Email or password is wrong"
 
 # GET CURRENT USER
 @app.route('/api/user/<id>', methods=['GET'])
 def get_user(id):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetUserById", [id])
+   cur.callproc("spGetCurrentUserById", [id])
    user = cur.fetchall()
 
    cur.close()

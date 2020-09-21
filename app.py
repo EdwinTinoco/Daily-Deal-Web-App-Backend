@@ -147,17 +147,17 @@ def get_shipping_types():
 
 # Enpoints for product_deals table--------------------------------------------------------------------------------
 # GET the active deal by user and active status
-@app.route('/api/active-deal/<id>', methods=['GET'])
+@app.route('/api/active-deals/<id>', methods=['GET'])
 def get_active_deal(id):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetActiveDealByUserId", [id])
+   cur.callproc("spGetActiveDealsByUserId", [id])
    deal = cur.fetchall()
    cur.close()
 
    return jsonify(deal)
 
 # GET the active deal by deal_id
-@app.route('/api/activate-deal/detail/<id>', methods=['GET'])
+@app.route('/api/active-deal/detail/<id>', methods=['GET'])
 def get_active_deal_detail(id):
    cur = mysql.connection.cursor()
    cur.callproc("spGetActivateDealDetailbyDealId", [id])
@@ -165,6 +165,28 @@ def get_active_deal_detail(id):
    cur.close()
 
    return jsonify(deal)
+
+# GET all active deals - for master admin account
+@app.route('/api/all-active-deals', methods=['GET'])
+def get_all_active_deal():
+   cur = mysql.connection.cursor()
+   cur.callproc("spMAGetAllActiveDeals", ())
+   all_deals = cur.fetchall()
+   cur.close()
+
+   return jsonify(all_deals)
+
+
+# Enpoints for sales table--------------------------------------------------------------------------------
+# GET the active deals totals by user id
+@app.route('/api/active-deals/totals/<id>', methods=['GET'])
+def get_active_deals_totlas(id):
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetActiveDealsTotalsByUserId", [id])
+   deals_totals = cur.fetchall()
+   cur.close()
+
+   return jsonify(deals_totals)
 
 
 

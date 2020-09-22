@@ -160,7 +160,7 @@ def get_active_deal(id):
 @app.route('/api/active-deal/detail/<id>', methods=['GET'])
 def get_active_deal_detail(id):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetActivateDealDetailbyDealId", [id])
+   cur.callproc("spGetActiveDealDetailbyDealId", [id])
    deal = cur.fetchall()
    cur.close()
 
@@ -176,6 +176,15 @@ def get_all_active_deal():
 
    return jsonify(all_deals)
 
+# GET product deal - url generated
+@app.route('/deal/product/<id>', methods=['GET'])
+def get_product_deal_url(id):
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetActiveDealDetailbyDealId", [id])
+   product_deal = cur.fetchall()
+   cur.close()
+
+   return jsonify(product_deal)
 
 # Enpoints for sales table--------------------------------------------------------------------------------
 # GET the active deals totals by user id

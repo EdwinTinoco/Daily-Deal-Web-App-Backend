@@ -244,6 +244,7 @@ def get_active_deals_totlas(id):
 
 @app.route('/api/sales/new-sale', methods=['POST'])
 def insert_new_sale():
+   product_id = request.json['productId']
    sales_customer_user_id = request.json['customerUserId']
    sales_deal_id = request.json['dealId']
    sales_date = request.json['saleDate']
@@ -254,7 +255,7 @@ def insert_new_sale():
    sales_stripe_payment_intent_id = request.json['stripePaymentIntentId']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spInsertNewSale", [sales_customer_user_id, sales_deal_id, sales_date, sales_subtotal,
+   cur.callproc("spInsertNewSale", [product_id, sales_customer_user_id, sales_deal_id, sales_date, sales_subtotal,
    sales_taxes, sales_total, sales_shipping_information, sales_stripe_payment_intent_id])
    mysql.connection.commit()
    cur.close()

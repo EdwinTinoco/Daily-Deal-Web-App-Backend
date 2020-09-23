@@ -4,8 +4,13 @@ from flask_cors import CORS
 import bcrypt
 import datetime
 from datetime import timedelta
+import stripe
 
 from secret_key import HOST, USER, PASSWORD, DB
+from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL
+
+stripe.api_key = TEST_SECRET_KEY
+
 
 app = Flask(__name__)
 CORS(app)
@@ -16,6 +21,46 @@ app.config['MYSQL_PASSWORD'] = PASSWORD
 app.config['MYSQL_DB'] = DB
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
+
+
+# STRIPE ENDPOINT --------------------------------------------------------------------------------------------------------
+# POST for create de session when user is going to pay.
+@app.route('/create-session', methods=['POST'])
+def create_checkout_session():
+   customer_user_email = request.json['customerEmail']
+   sales_deal_id = request.json['dealId']
+   product_name = request.json['productName']
+   product_image = request.json['productImage']
+   sales_total = request.json['total']
+
+   total = int(float(sales_total) * 100)
+
+   try:
+      checkout_session = stripe.checkout.Session.create(
+         customer_email= customer_user_email,
+         payment_method_types=['card'],
+         line_items=[
+               {
+                  'price_data': {
+                     'currency': 'usd',
+                     'unit_amount': total,
+                     'product_data': {
+                        'name': product_name,
+                        'images': [product_image],
+                     },
+                  },
+                  'quantity': 1,
+               },
+         ],         
+         mode='payment',
+         success_url= SUCCESS_URL + sales_deal_id + '?success=true',
+         cancel_url= CANCEL_URL + sales_deal_id + '?canceled=true',
+      )
+      return jsonify({'id': checkout_session.id})
+
+   except Exception as e:
+      return jsonify(error=str(e)), 403
+
 
 
 # Enpoints for Home page ------------------------------------------------------------------------------
@@ -196,6 +241,25 @@ def get_active_deals_totlas(id):
    cur.close()
 
    return jsonify(deals_totals)
+
+@app.route('/api/sales/new-sale', methods=['POST'])
+def insert_new_sale():
+   sales_customer_user_id = request.json['customerUserId']
+   sales_deal_id = request.json['dealId']
+   sales_date = request.json['saleDate']
+   sales_subtotal = request.json['subtotal']
+   sales_taxes = request.json['taxes']
+   sales_total = request.json['total']
+   sales_shipping_information = request.json['shippingAddress']
+   sales_stripe_payment_intent_id = request.json['stripePaymentIntentId']
+
+   cur = mysql.connection.cursor()
+   cur.callproc("spInsertNewSale", [sales_customer_user_id, sales_deal_id, sales_date, sales_subtotal,
+   sales_taxes, sales_total, sales_shipping_information, sales_stripe_payment_intent_id])
+   mysql.connection.commit()
+   cur.close()
+
+   return jsonify('Sale inserted successfully')
 
 
 

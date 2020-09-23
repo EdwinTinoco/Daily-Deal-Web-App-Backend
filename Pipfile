@@ -10,6 +10,7 @@ flask = "*"
 flask-mysqldb = "*"
 bcrypt = "*"
 flask-cors = "*"
+stripe = "*"
 
 [requires]
 python_version = "3.8"

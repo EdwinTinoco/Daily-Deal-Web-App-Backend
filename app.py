@@ -262,6 +262,35 @@ def insert_new_sale():
 
    return jsonify('Sale inserted successfully')
 
+# POST Check if the user already made a purchase
+@app.route('/api/user/check-purchase', methods={'POST'})
+def check_user_purchase():
+   userId = request.json['userId']
+   dealId = request.json['dealId']
+
+   cur = mysql.connection.cursor()
+   cur.callproc("spCheckCustomerUserMadePurchase", [userId, dealId, ""])
+   mysql.connection.commit()
+
+   cur.execute('SELECT @message')
+   result = cur.fetchone() 
+   cur.close()
+
+   return jsonify(result)
+
+
+# ENDPOINTS FORM product_stock TABLE
+# GET how many items are in stock
+@app.route('/api/check-stock-left/<id>', methods=['GET'])
+def check_stock(id):
+   cur = mysql.connection.cursor()
+   cur.callproc("spCheckStockByDealId", [id])
+   stock = cur.fetchone()
+   cur.close()
+
+   return jsonify(stock)
+
+
 
 
 

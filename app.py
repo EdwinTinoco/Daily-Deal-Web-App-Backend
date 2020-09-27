@@ -7,9 +7,10 @@ from datetime import timedelta
 import stripe
 
 from secret_key import HOST, USER, PASSWORD, DB
-from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL
+from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY
 
 stripe.api_key = TEST_SECRET_KEY
+endpoint_secret = ENPOINT_SECRET_KEY
 
 
 app = Flask(__name__)
@@ -23,20 +24,44 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
 
+# Enpoints for Home page ------------------------------------------------------------------------------
+@app.route('/')
+def home():    
+    return "<h1>Kudu RESTful APIs Application</h1>"
+
+
+
 # STRIPE ENDPOINT --------------------------------------------------------------------------------------------------------
 # POST for create de session when user is going to pay.
 @app.route('/create-session', methods=['POST'])
 def create_checkout_session():
+   product_id = request.json['productId']
+   product_name = request.json['productName']
+   product_image = request.json['productImage']   
+   sales_customer_user_id = request.json['customerUserId']
    customer_user_email = request.json['customerEmail']
    sales_deal_id = request.json['dealId']
-   product_name = request.json['productName']
-   product_image = request.json['productImage']
+   sales_date = request.json['saleDate']
+   sales_subtotal = request.json['subtotal']
+   sales_taxes = request.json['taxes']
    sales_total = request.json['total']
+   shipping_type = request.json['shippingType']
+   sales_stripe_session_id = request.json['stripeSessionId']
+   sales_stripe_payment_intent_id = request.json['stripePaymentIntentId']
 
    total = int(float(sales_total) * 100)
 
+   if shipping_type == "Shipping to customer's address":
+      allowed_countries = {
+            'allowed_countries': ['US']
+         }
+   else:
+      allowed_countries = {}
+
    try:
-      checkout_session = stripe.checkout.Session.create(
+      checkout_session = stripe.checkout.Session.create(        
+         billing_address_collection='auto',
+         shipping_address_collection= allowed_countries,
          customer_email= customer_user_email,
          payment_method_types=['card'],
          line_items=[
@@ -52,9 +77,17 @@ def create_checkout_session():
                   'quantity': 1,
                },
          ],         
+         metadata= {
+            'productId': product_id,
+            'customerUserId': sales_customer_user_id,
+            'dealId': sales_deal_id,
+            'salesDate': sales_date,
+            'subtotal': sales_subtotal,
+            'taxes': sales_taxes
+         },
          mode='payment',
          success_url= SUCCESS_URL + sales_deal_id + '?success=true',
-         cancel_url= CANCEL_URL + sales_deal_id + '?canceled=true',
+         cancel_url= CANCEL_URL + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 
@@ -62,11 +95,63 @@ def create_checkout_session():
       return jsonify(error=str(e)), 403
 
 
+@app.route('/stripe/webhook', methods=['POST'])
+def my_webhook():
+   payload = request.data
+   sig_header = request.headers['STRIPE_SIGNATURE']
+   event = None
 
-# Enpoints for Home page ------------------------------------------------------------------------------
-@app.route('/')
-def home():    
-    return "<h1>Daily Deal Web Application</h1>"
+   try:
+      event = stripe.Webhook.construct_event(
+         payload, sig_header, endpoint_secret
+      )
+   except ValueError as e:
+      # Invalid payload
+      return jsonify("error"), 400
+   except stripe.error.SignatureVerificationError as e:
+      # Invalid signature
+      return jsonify("error"), 400
+
+      # Handle the checkout.session.completed event
+   if event['type'] == 'checkout.session.completed':
+      session = event['data']['object']
+
+      # Fulfill the purchase...
+      fulfill_order(session)
+
+   # Passed signature verification
+   return jsonify("Successfull payment with webhooks"), 200
+
+def fulfill_order(session): 
+   if session['shipping'] == None:
+      shipping_info = "na"
+   elif session['shipping']['address']['line2'] != None:
+      shipping_info = session['shipping']['name'] + ' ' + session['shipping']['address']['line1'] + ' ' + session['shipping']['address']['line2']  + ' ' + session['shipping']['address']['city'] + ' ' + session['shipping']['address']['state'] + ' ' + session['shipping']['address']['postal_code'] + ' ' + session['shipping']['address']['country']
+   else:
+      shipping_info = session['shipping']['name'] + ' ' + session['shipping']['address']['line1'] + ' ' + session['shipping']['address']['city'] + ' ' + session['shipping']['address']['state'] + ' ' + session['shipping']['address']['postal_code'] + ' ' + session['shipping']['address']['country']
+
+
+   product_id = session['metadata']['productId']
+   sales_customer_user_id = session['metadata']['customerUserId']
+   sales_deal_id = session['metadata']['dealId']
+   sales_date = session['metadata']['salesDate']
+   sales_subtotal = session['metadata']['subtotal']
+   sales_taxes = session['metadata']['taxes']
+   sales_total = session['amount_total']
+   sales_shipping_information = shipping_info
+   sales_stripe_session_id = session['id']
+   sales_stripe_payment_intent_id = session['payment_intent']
+
+
+   cur = mysql.connection.cursor()
+   cur.callproc("spInsertNewSale", [product_id, sales_customer_user_id, sales_deal_id, sales_date, sales_subtotal,
+   sales_taxes, sales_total, sales_shipping_information, sales_stripe_session_id,sales_stripe_payment_intent_id])
+   mysql.connection.commit()
+   cur.close()
+
+   return jsonify('Sale inserted successfully')
+
+
 
 # Enpoints for users table------------------------------------------------------------------------
 @app.route('/api/user/signup', methods=['POST'])

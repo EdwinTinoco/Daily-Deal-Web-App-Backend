@@ -27,11 +27,11 @@ mysql = MySQL(app)
 # Enpoints for Home page ------------------------------------------------------------------------------
 @app.route('/')
 def home():    
-    return "<h1>Kudu RESTful APIs Application</h1>"
+    return "<h1>Kudu Web Application RESTful APIs</h1>"
 
 
 
-# STRIPE ENDPOINT --------------------------------------------------------------------------------------------------------
+# STRIPE ENDPOINTS --------------------------------------------------------------------------------------------------------
 # POST for create de session when user is going to pay.
 @app.route('/create-session', methods=['POST'])
 def create_checkout_session():
@@ -179,11 +179,14 @@ def signup_user():
       hashed = user_password
       
       cur = mysql.connection.cursor()
-      cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active])
+      cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 0])
       mysql.connection.commit()
+
+      cur.execute('SELECT @userId')
+      result = cur.fetchone() 
       cur.close()
 
-      return jsonify('User registered successfully')
+      return jsonify(result)
 
 
 # POST LOGIN USER

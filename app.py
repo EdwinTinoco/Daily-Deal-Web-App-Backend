@@ -24,7 +24,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
 
-# Enpoints for Home page ------------------------------------------------------------------------------
+# Enpoints for Home page -----------------------------------------------------------------------------------------------
 @app.route('/')
 def home():    
     return "<h1>Kudu Web Application RESTful APIs</h1>"
@@ -45,13 +45,13 @@ def create_checkout_session():
    sales_subtotal = request.json['subtotal']
    sales_taxes = request.json['taxes']
    sales_total = request.json['total']
-   shipping_type = request.json['shippingType']
+   shipping_type_title = request.json['shippingTypeTitle']
    sales_stripe_session_id = request.json['stripeSessionId']
    sales_stripe_payment_intent_id = request.json['stripePaymentIntentId']
 
    total = int(float(sales_total) * 100)
 
-   if shipping_type == "Shipping to customer's address":
+   if shipping_type_title == "Shipping to customer's address":
       allowed_countries = {
             'allowed_countries': ['US']
          }
@@ -70,9 +70,8 @@ def create_checkout_session():
                      'currency': 'usd',
                      'unit_amount': total,
                      'product_data': {
-                        'name': product_name,
-                        'images': [product_image],
-                     },
+                        'name': product_name
+                     }
                   },
                   'quantity': 1,
                },
@@ -83,7 +82,8 @@ def create_checkout_session():
             'dealId': sales_deal_id,
             'salesDate': sales_date,
             'subtotal': sales_subtotal,
-            'taxes': sales_taxes
+            'taxes': sales_taxes,
+            'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
          success_url= SUCCESS_URL + sales_deal_id + '?success=true',
@@ -123,13 +123,31 @@ def my_webhook():
    return jsonify("Successfull payment with webhooks"), 200
 
 def fulfill_order(session): 
-   if session['shipping'] == None:
-      shipping_info = "na"
-   elif session['shipping']['address']['line2'] != None:
-      shipping_info = session['shipping']['name'] + ' ' + session['shipping']['address']['line1'] + ' ' + session['shipping']['address']['line2']  + ' ' + session['shipping']['address']['city'] + ' ' + session['shipping']['address']['state'] + ' ' + session['shipping']['address']['postal_code'] + ' ' + session['shipping']['address']['country']
-   else:
-      shipping_info = session['shipping']['name'] + ' ' + session['shipping']['address']['line1'] + ' ' + session['shipping']['address']['city'] + ' ' + session['shipping']['address']['state'] + ' ' + session['shipping']['address']['postal_code'] + ' ' + session['shipping']['address']['country']
+   print(session)
+   
+   if session['shipping'] != None:
+      name = session['shipping']['name']
+      line_1 = session['shipping']['address']['line1']
+      city = session['shipping']['address']['city']
+      zip_code = session['shipping']['address']['postal_code']
+      state = session['shipping']['address']['state']
+      country = session['shipping']['address']['country']
 
+      if session['shipping']['address']['line2'] != None:
+         line_2 = session['shipping']['address']['line2']
+      else:
+         line_2 = ""
+   else:
+      name = ""
+      line_1 = ""
+      line_2 = ""
+      city = ""
+      zip_code = ""
+      state = ""
+      country = ""
+
+
+   total = session['amount_total'] / 100
 
    product_id = session['metadata']['productId']
    sales_customer_user_id = session['metadata']['customerUserId']
@@ -137,15 +155,22 @@ def fulfill_order(session):
    sales_date = session['metadata']['salesDate']
    sales_subtotal = session['metadata']['subtotal']
    sales_taxes = session['metadata']['taxes']
-   sales_total = session['amount_total']
-   sales_shipping_information = shipping_info
+   sales_total = total
+   shipping_title = session['metadata']['shippingTypeTitle']
+   shipping_name = name
+   shipping_line_1 = line_1
+   shipping_line_2 = line_2
+   shipping_city = city
+   shipping_zip_code = zip_code
+   shipping_state = state
+   shipping_country = country
    sales_stripe_session_id = session['id']
    sales_stripe_payment_intent_id = session['payment_intent']
 
-
    cur = mysql.connection.cursor()
    cur.callproc("spInsertNewSale", [product_id, sales_customer_user_id, sales_deal_id, sales_date, sales_subtotal,
-   sales_taxes, sales_total, sales_shipping_information, sales_stripe_session_id,sales_stripe_payment_intent_id])
+   sales_taxes, sales_total, shipping_title, shipping_name, shipping_line_1, shipping_line_2, shipping_city, 
+   shipping_zip_code, shipping_state, shipping_country, sales_stripe_session_id, sales_stripe_payment_intent_id])
    mysql.connection.commit()
    cur.close()
 
@@ -237,11 +262,11 @@ def get_user(id):
 def insert_product_deal():
    product_user_id = request.json["userId"]
    product_title = request.json["title"]
-   picture_product = request.json["image"]
+   picture_product = request.json["thumbImage1"]
    product_description = request.json["description"]
    product_price = request.json["price"]
    stock_quantity = request.json["stock"]
-   product_shipping_type = request.json["shippingType"]
+   product_shipping_type_id = request.json["shippingTypeId"]
    # deal_created_date = datetime.datetime.now()
    # deal_started_date = datetime.datetime.now()
    # deal_finished_date = datetime.datetime.now() + timedelta(days=1)
@@ -253,12 +278,12 @@ def insert_product_deal():
 
    cur = mysql.connection.cursor()
    cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-   product_description, product_price, stock_quantity, product_shipping_type, 
+   product_description, product_price, stock_quantity, product_shipping_type_id, 
    deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
 
    mysql.connection.commit()
 
-   cur.execute('SELECT @productId, @generatedDealProductUrl')
+   cur.execute('SELECT @dealId, @generatedDealProductUrl')
    result = cur.fetchone() 
    cur.close()
 

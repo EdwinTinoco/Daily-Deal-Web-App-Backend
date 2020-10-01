@@ -310,7 +310,7 @@ def get_shipping_types():
 
 
 # Enpoints for product_deals table--------------------------------------------------------------------------------
-# GET the active deal by user and active status
+# GET the active deal by user and active status - for business account
 @app.route('/api/active-deals/<id>', methods=['GET'])
 def get_active_deal(id):
    cur = mysql.connection.cursor()
@@ -379,6 +379,17 @@ def check_user_purchase():
    return jsonify(result)
 
 
+# GET DEALS SALES DETAIL BY PRODUCT DEAL
+@app.route('/api/sales-deal/detail/<id>', methods=['GET'])
+def get_sales_deal(id):
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetSalesByDealId", [id])
+   sales_deal = cur.fetchall()
+   cur.close()
+
+   return jsonify(sales_deal)
+
+
 # ENDPOINTS FORM product_stock TABLE
 # GET how many items are in stock
 @app.route('/api/check-stock-left/<id>', methods=['GET'])
@@ -389,7 +400,6 @@ def check_stock(id):
    cur.close()
 
    return jsonify(stock)
-
 
 
 # ENDPOINTS FROM pickup_store_addresses TABLE

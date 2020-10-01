@@ -38,6 +38,7 @@ def create_checkout_session():
    product_id = request.json['productId']
    product_name = request.json['productName']
    product_image = request.json['productImage']   
+   product_description = request.json['productDescription']   
    sales_customer_user_id = request.json['customerUserId']
    customer_user_email = request.json['customerEmail']
    sales_deal_id = request.json['dealId']
@@ -46,8 +47,6 @@ def create_checkout_session():
    sales_taxes = request.json['taxes']
    sales_total = request.json['total']
    shipping_type_title = request.json['shippingTypeTitle']
-   sales_stripe_session_id = request.json['stripeSessionId']
-   sales_stripe_payment_intent_id = request.json['stripePaymentIntentId']
 
    total = int(float(sales_total) * 100)
 
@@ -70,7 +69,8 @@ def create_checkout_session():
                      'currency': 'usd',
                      'unit_amount': total,
                      'product_data': {
-                        'name': product_name
+                        'name': product_name,
+                        'description': product_description
                      }
                   },
                   'quantity': 1,
@@ -186,6 +186,11 @@ def signup_user():
    user_email = request.json['email']
    user_password = request.json['password']
    user_active = request.json['active']
+   pickup_line_1 = request.json['line1']
+   pickup_line_2 = request.json['line2']
+   pickup_city = request.json['city']
+   pickup_zip_code = request.json['zp']
+   pickup_state = request.json['state']
 
    cur = mysql.connection.cursor()
    cur.callproc("spCheckEmailExist", ())
@@ -204,7 +209,8 @@ def signup_user():
       hashed = user_password
       
       cur = mysql.connection.cursor()
-      cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 0])
+      cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
+      pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
       mysql.connection.commit()
 
       cur.execute('SELECT @userId')
@@ -266,7 +272,7 @@ def insert_product_deal():
    product_description = request.json["description"]
    product_price = request.json["price"]
    stock_quantity = request.json["stock"]
-   product_shipping_type_id = request.json["shippingTypeId"]
+   deal_shipping_type_id = request.json["shippingTypeId"]
    # deal_created_date = datetime.datetime.now()
    # deal_started_date = datetime.datetime.now()
    # deal_finished_date = datetime.datetime.now() + timedelta(days=1)
@@ -278,7 +284,7 @@ def insert_product_deal():
 
    cur = mysql.connection.cursor()
    cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-   product_description, product_price, stock_quantity, product_shipping_type_id, 
+   product_description, product_price, stock_quantity, deal_shipping_type_id, 
    deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
 
    mysql.connection.commit()
@@ -355,25 +361,6 @@ def get_active_deals_totlas(id):
 
    return jsonify(deals_totals)
 
-@app.route('/api/sales/new-sale', methods=['POST'])
-def insert_new_sale():
-   product_id = request.json['productId']
-   sales_customer_user_id = request.json['customerUserId']
-   sales_deal_id = request.json['dealId']
-   sales_date = request.json['saleDate']
-   sales_subtotal = request.json['subtotal']
-   sales_taxes = request.json['taxes']
-   sales_total = request.json['total']
-   sales_shipping_information = request.json['shippingAddress']
-   sales_stripe_payment_intent_id = request.json['stripePaymentIntentId']
-
-   cur = mysql.connection.cursor()
-   cur.callproc("spInsertNewSale", [product_id, sales_customer_user_id, sales_deal_id, sales_date, sales_subtotal,
-   sales_taxes, sales_total, sales_shipping_information, sales_stripe_payment_intent_id])
-   mysql.connection.commit()
-   cur.close()
-
-   return jsonify('Sale inserted successfully')
 
 # POST Check if the user already made a purchase
 @app.route('/api/user/check-purchase', methods={'POST'})
@@ -402,6 +389,20 @@ def check_stock(id):
    cur.close()
 
    return jsonify(stock)
+
+
+
+# ENDPOINTS FROM pickup_store_addresses TABLE
+# GET PICK UP STORE ADDRESS
+@app.route('/api/user/pickup-store/<id>', methods=['GET'])
+def get_pickup_store_address(id):
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetPickupStoreAddressByUserId", [id])
+   pickup_address = cur.fetchall()
+
+   cur.close()
+
+   return jsonify(pickup_address)
 
 
 

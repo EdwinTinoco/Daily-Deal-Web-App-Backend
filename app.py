@@ -94,7 +94,7 @@ def create_checkout_session():
    except Exception as e:
       return jsonify(error=str(e)), 403
 
-
+# POST webhook sending headers to make secure the session and payment
 @app.route('/stripe/webhook', methods=['POST'])
 def my_webhook():
    payload = request.data
@@ -176,6 +176,48 @@ def fulfill_order(session):
 
    return jsonify('Sale inserted successfully')
 
+# POST a product
+@app.route('/v1/products', methods=['POST'])
+def add_product():
+   product_user_id = request.json["userId"]
+   product_title = request.json["title"]
+   picture_product = request.json["thumbImage1"]
+   product_description = request.json["description"]
+   product_price = request.json["price"]
+   stock_quantity = request.json["stock"]
+   deal_shipping_type_id = request.json["shippingTypeId"]
+   # deal_created_date = datetime.datetime.now()
+   # deal_started_date = datetime.datetime.now()
+   # deal_finished_date = datetime.datetime.now() + timedelta(days=1)
+
+   deal_created_date = request.json["createdDealDate"]
+   deal_started_date = request.json["startedDealDate"]
+   deal_finished_date = request.json["finishedDealDate"]
+   deal_status = request.json['dealStatus']  
+
+   try:
+      product = stripe.Product.create(
+         name = product_title,
+         description = product_description
+      )
+
+      product_stripe_id = product['id']
+
+      cur = mysql.connection.cursor()
+      cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
+      product_description, product_price, product_stripe_id, stock_quantity, deal_shipping_type_id, 
+      deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
+
+      mysql.connection.commit()
+
+      cur.execute('SELECT @dealId, @generatedDealProductUrl')
+      result = cur.fetchone() 
+      cur.close()
+
+      return jsonify({'message': "Product created succesfully", 'result': result}), 200
+
+   except Exception as e:
+      return jsonify(error=str(e)), 403
 
 
 # Enpoints for users table------------------------------------------------------------------------
@@ -264,36 +306,36 @@ def get_user(id):
 
 # Enpoints for products, deals table------------------------------------------------------------------------
 # POST product and deal tables
-@app.route('/api/product/new-deal', methods=['POST'])
-def insert_product_deal():
-   product_user_id = request.json["userId"]
-   product_title = request.json["title"]
-   picture_product = request.json["thumbImage1"]
-   product_description = request.json["description"]
-   product_price = request.json["price"]
-   stock_quantity = request.json["stock"]
-   deal_shipping_type_id = request.json["shippingTypeId"]
-   # deal_created_date = datetime.datetime.now()
-   # deal_started_date = datetime.datetime.now()
-   # deal_finished_date = datetime.datetime.now() + timedelta(days=1)
+# @app.route('/api/product/new-deal', methods=['POST'])
+# def insert_product_deal():
+#    product_user_id = request.json["userId"]
+#    product_title = request.json["title"]
+#    picture_product = request.json["thumbImage1"]
+#    product_description = request.json["description"]
+#    product_price = request.json["price"]
+#    stock_quantity = request.json["stock"]
+#    deal_shipping_type_id = request.json["shippingTypeId"]
+#    # deal_created_date = datetime.datetime.now()
+#    # deal_started_date = datetime.datetime.now()
+#    # deal_finished_date = datetime.datetime.now() + timedelta(days=1)
 
-   deal_created_date = request.json["createdDealDate"]
-   deal_started_date = request.json["startedDealDate"]
-   deal_finished_date = request.json["finishedDealDate"]
-   deal_status = request.json['dealStatus']     
+#    deal_created_date = request.json["createdDealDate"]
+#    deal_started_date = request.json["startedDealDate"]
+#    deal_finished_date = request.json["finishedDealDate"]
+#    deal_status = request.json['dealStatus']     
 
-   cur = mysql.connection.cursor()
-   cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-   product_description, product_price, stock_quantity, deal_shipping_type_id, 
-   deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
+#    cur = mysql.connection.cursor()
+#    cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
+#    product_description, product_price, stock_quantity, deal_shipping_type_id, 
+#    deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
 
-   mysql.connection.commit()
+#    mysql.connection.commit()
 
-   cur.execute('SELECT @dealId, @generatedDealProductUrl')
-   result = cur.fetchone() 
-   cur.close()
+#    cur.execute('SELECT @dealId, @generatedDealProductUrl')
+#    result = cur.fetchone() 
+#    cur.close()
 
-   return jsonify(result)
+#    return jsonify(result)
 
 
 # Enpoints for shipping_type table--------------------------------------------------------------------------------

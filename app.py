@@ -327,36 +327,32 @@ def add_customer():
 # POST LOGIN USER
 @app.route('/api/user/login', methods=['POST'])
 def login_user():
-   user_email = request.json['email']
+   userEmail = request.json['email']
    user_password = request.json['password']  
+   
+   cur = mysql.connection.cursor()
+   cur.callproc("spCheckEmailExist", [userEmail, "", ""])
+   cur.execute('SELECT @message, @hashPassword')
+   message = cur.fetchone()  
+   cur.close() 
 
-   try:
+   print(message)      
 
-      cur = mysql.connection.cursor()
-      cur.callproc("spCheckEmailExist", [user_email, "", ""])
-      cur.execute('SELECT @message, @userPassword')
-      message = cur.fetchone()  
-      cur.close() 
+   if message['@message'] == "A user with that email already exist":
+      hash_password = message['@hashPassword']       
 
-      print(message)      
+      if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
+         cur = mysql.connection.cursor()
+         cur.callproc("spLoginUser", [userEmail, hash_password])
+         user = cur.fetchall()
+         cur.close()
 
-      if message['@message'] == "A user with that email already exist":
-         hash_password = message['@userPassword']  
-
-         if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
-
-            cur = mysql.connection.cursor()
-            cur.callproc("spLoginUser", [user_email, hash_password])
-            user = cur.fetchall()
-            cur.close()
-
-            return jsonify({'message': 'Login successfully', 'user': user})         
-         else:
-            return jsonify({'message': "Email or password is wrong"})
+         return jsonify({'message': 'Login successfully', 'user': user})         
       else:
-         return jsonify({'message': "Email or password is wrong"}) 
-   except Exception as e:
-      return jsonify(error=str(e)), 403
+         return jsonify({'message': "Email or password is wrong"})
+   else:
+      return jsonify({'message': "Email or password is wrong"}) 
+   
   
 
 # GET CURRENT USER

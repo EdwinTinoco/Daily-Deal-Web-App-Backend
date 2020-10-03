@@ -8,9 +8,9 @@ verify_ssl = true
 [packages]
 flask = "*"
 flask-mysqldb = "*"
-bcrypt = "*"
 flask-cors = "*"
 stripe = "*"
+bcrypt = "*"
 
 [requires]
 python_version = "3.8"

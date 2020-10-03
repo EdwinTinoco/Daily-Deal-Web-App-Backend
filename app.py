@@ -263,8 +263,8 @@ def add_customer():
 
          user_stripe_customer_id = customer['id']
 
-          #    hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
-         hashed = user_password
+         hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
+         # hashed = user_password
             
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
@@ -330,29 +330,33 @@ def login_user():
    user_email = request.json['email']
    user_password = request.json['password']  
 
-   cur = mysql.connection.cursor()
-   cur.callproc("spCheckEmailExist", [user_email, "", ""])
-   cur.execute('SELECT @message, @userPassword')
-   message = cur.fetchone()  
-   cur.close() 
-
-   print(message)      
-
-   if message['@message'] == "A user with that email already exist":
-      hash_password = message['@userPassword']  
-
-      # if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
+   try:
 
       cur = mysql.connection.cursor()
-      cur.callproc("spLoginUser", [user_email, user_password])
-      user = cur.fetchall()
-      cur.close()
+      cur.callproc("spCheckEmailExist", [user_email, "", ""])
+      cur.execute('SELECT @message, @userPassword')
+      message = cur.fetchone()  
+      cur.close() 
 
-      return jsonify({'message': 'Login successfully', 'user': user})         
-      # else:
-      #    return "Email or password is wrong"
-   else:
-      return jsonify({'message': "Email or password is wrong"}) 
+      print(message)      
+
+      if message['@message'] == "A user with that email already exist":
+         hash_password = message['@userPassword']  
+
+         if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
+
+            cur = mysql.connection.cursor()
+            cur.callproc("spLoginUser", [user_email, hash_password])
+            user = cur.fetchall()
+            cur.close()
+
+            return jsonify({'message': 'Login successfully', 'user': user})         
+         else:
+            return jsonify({'message': "Email or password is wrong"})
+      else:
+         return jsonify({'message': "Email or password is wrong"}) 
+   except Exception as e:
+      return jsonify(error=str(e)), 403
   
 
 # GET CURRENT USER

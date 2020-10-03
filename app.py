@@ -7,7 +7,7 @@ from datetime import timedelta
 import stripe
 
 from secret_key import HOST, USER, PASSWORD, DB
-from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY
+from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
 stripe.api_key = TEST_SECRET_KEY
 endpoint_secret = ENPOINT_SECRET_KEY
@@ -39,6 +39,7 @@ def create_checkout_session():
    product_name = request.json['productName']
    product_image = request.json['productImage']   
    product_description = request.json['productDescription']   
+   product_stripe_id = request.json['stripeProductId']
    sales_customer_user_id = request.json['customerUserId']
    customer_user_email = request.json['customerEmail']
    sales_deal_id = request.json['dealId']
@@ -47,6 +48,7 @@ def create_checkout_session():
    sales_taxes = request.json['taxes']
    sales_total = request.json['total']
    shipping_type_title = request.json['shippingTypeTitle']
+   user_stripe_customer_id = request.json['stripeCustomerId']
 
    total = int(float(sales_total) * 100)
 
@@ -61,19 +63,17 @@ def create_checkout_session():
       checkout_session = stripe.checkout.Session.create(        
          billing_address_collection='auto',
          shipping_address_collection= allowed_countries,
-         customer_email= customer_user_email,
+         customer = user_stripe_customer_id,
          payment_method_types=['card'],
          line_items=[
                {
                   'price_data': {
                      'currency': 'usd',
                      'unit_amount': total,
-                     'product_data': {
-                        'name': product_name,
-                        'description': product_description
-                     }
+                     'product': product_stripe_id                     
                   },
-                  'quantity': 1,
+                  'quantity': 1
+                  # 'tax_rates': [TAX_RATE_ID]
                },
          ],         
          metadata= {
@@ -220,46 +220,108 @@ def add_product():
       return jsonify(error=str(e)), 403
 
 
-# Enpoints for users table------------------------------------------------------------------------
-@app.route('/api/user/signup', methods=['POST'])
-def signup_user(): 
+# POST a customer
+@app.route('/v1/customers', methods=['POST'])
+def add_customer():
    user_role_title = request.json['role']
    user_name = request.json['name']
    user_email = request.json['email']
    user_password = request.json['password']
    user_active = request.json['active']
-   pickup_line_1 = request.json['line1']
-   pickup_line_2 = request.json['line2']
-   pickup_city = request.json['city']
-   pickup_zip_code = request.json['zp']
-   pickup_state = request.json['state']
-
-   cur = mysql.connection.cursor()
-   cur.callproc("spCheckEmailExist", ())
-   emails = cur.fetchall()
-   cur.close() 
-
-   ban = False
-   for row in emails:
-      if row['user_email'] == user_email:
-         ban = True
-
-   if ban:
-      return 'A user with that email already exist'
+   
+   if user_role_title == "business_admin":
+      pickup_line_1 = request.json['line1']
+      pickup_line_2 = request.json['line2']
+      pickup_city = request.json['city']
+      pickup_zip_code = request.json['zp']
+      pickup_state = request.json['state']
    else:
-   #    hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
-      hashed = user_password
-      
+      pickup_line_1 = ""
+      pickup_line_2 = ""
+      pickup_city = ""
+      pickup_zip_code = ""
+      pickup_state = ""
+
+   print('email', user_email)
+
+   try:
       cur = mysql.connection.cursor()
-      cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
-      pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
-      mysql.connection.commit()
+      cur.callproc("spCheckEmailExist", [user_email, "", ""])
+      cur.execute('SELECT @message, @userPassword')
+      message = cur.fetchone()  
+      cur.close() 
 
-      cur.execute('SELECT @userId')
-      result = cur.fetchone() 
-      cur.close()
+      print(message)      
 
-      return jsonify(result)
+      if message['@message'] == "A user with that email already exist":
+         return jsonify({'message': message['@message']}) 
+      else:
+         customer = stripe.Customer.create(
+            email = user_email,
+            name = user_name
+         )
+
+         user_stripe_customer_id = customer['id']
+
+          #    hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
+         hashed = user_password
+            
+         cur = mysql.connection.cursor()
+         cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
+         user_stripe_customer_id, pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
+         mysql.connection.commit()
+
+         cur.execute('SELECT @userId')
+         result = cur.fetchone() 
+         cur.close()        
+
+         return jsonify({'message': "Customer created succesfully", 'result': result}), 200
+
+   except Exception as e:
+      return jsonify(error=str(e)), 403
+
+
+
+# Enpoints for users table------------------------------------------------------------------------
+# @app.route('/api/user/signup', methods=['POST'])
+# def signup_user(): 
+#    user_role_title = request.json['role']
+#    user_name = request.json['name']
+#    user_email = request.json['email']
+#    user_password = request.json['password']
+#    user_active = request.json['active']
+#    pickup_line_1 = request.json['line1']
+#    pickup_line_2 = request.json['line2']
+#    pickup_city = request.json['city']
+#    pickup_zip_code = request.json['zp']
+#    pickup_state = request.json['state']
+
+#    cur = mysql.connection.cursor()
+#    cur.callproc("spCheckEmailExist", ())
+#    emails = cur.fetchall()
+#    cur.close() 
+
+#    ban = False
+#    for row in emails:
+#       if row['user_email'] == user_email:
+#          ban = True
+
+#    if ban:
+#       return 'A user with that email already exist'
+#    else:
+#    #    hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
+#       hashed = user_password
+      
+#       cur = mysql.connection.cursor()
+#       cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
+#       pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
+#       mysql.connection.commit()
+
+#       cur.execute('SELECT @userId')
+#       result = cur.fetchone() 
+#       cur.close()
+
+#       return jsonify(result)
 
 
 # POST LOGIN USER
@@ -269,28 +331,29 @@ def login_user():
    user_password = request.json['password']  
 
    cur = mysql.connection.cursor()
-   cur.callproc("spCheckEmailExist", ())
-   emails = cur.fetchall()
+   cur.callproc("spCheckEmailExist", [user_email, "", ""])
+   cur.execute('SELECT @message, @userPassword')
+   message = cur.fetchone()  
    cur.close() 
 
-   ban = False
-   for row in emails:
-      if row['user_email'] == user_email:
-         ban = True
-         hash_password = row["user_password"]   
+   print(message)      
 
-   if ban:      
+   if message['@message'] == "A user with that email already exist":
+      hash_password = message['@userPassword']  
+
       # if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
+
       cur = mysql.connection.cursor()
       cur.callproc("spLoginUser", [user_email, user_password])
       user = cur.fetchall()
       cur.close()
 
-      return jsonify(user)         
+      return jsonify({'message': 'Login successfully', 'user': user})         
       # else:
       #    return "Email or password is wrong"
    else:
-      return "Email or password is wrong"
+      return jsonify({'message': "Email or password is wrong"}) 
+  
 
 # GET CURRENT USER
 @app.route('/api/user/<id>', methods=['GET'])
@@ -382,7 +445,7 @@ def get_all_active_deal():
 
    return jsonify(all_deals)
 
-# GET product deal - url generated
+# GET product deal - contains url generated
 @app.route('/deal/product/<id>', methods=['GET'])
 def get_product_deal_url(id):
    cur = mysql.connection.cursor()

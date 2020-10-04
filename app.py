@@ -333,9 +333,7 @@ def login_user():
    cur.callproc("spCheckEmailExist", [userEmail, "", ""])
    cur.execute('SELECT @message, @hashPassword')
    message = cur.fetchone()  
-   cur.close() 
-
-   print(message)      
+   cur.close()    
 
    if message['@message'] == "A user with that email already exist":
       hash_password = message['@hashPassword']       

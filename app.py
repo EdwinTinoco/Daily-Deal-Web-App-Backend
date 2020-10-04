@@ -264,7 +264,6 @@ def add_customer():
          user_stripe_customer_id = customer['id']
 
          hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
-         # hashed = user_password
             
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
@@ -495,7 +494,7 @@ def get_sales_deal(id):
    return jsonify(sales_deal)
 
 
-# ENDPOINTS FORM product_stock TABLE
+# ENDPOINTS For product_stock TABLE
 # GET how many items are in stock
 @app.route('/api/check-stock-left/<id>', methods=['GET'])
 def check_stock(id):
@@ -507,7 +506,7 @@ def check_stock(id):
    return jsonify(stock)
 
 
-# ENDPOINTS FROM pickup_store_addresses TABLE
+# ENDPOINTS For pickup_store_addresses TABLE
 # GET PICK UP STORE ADDRESS
 @app.route('/api/user/pickup-store/<id>', methods=['GET'])
 def get_pickup_store_address(id):

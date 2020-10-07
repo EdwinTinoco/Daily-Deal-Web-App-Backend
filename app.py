@@ -1,12 +1,15 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, url_for
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 import bcrypt
 import datetime
 from datetime import timedelta
 import stripe
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
 from secret_key import HOST, USER, PASSWORD, DB
+from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
 from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
 stripe.api_key = TEST_SECRET_KEY
@@ -23,11 +26,67 @@ app.config['MYSQL_DB'] = DB
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
+#app.config.from_pyfile('email.py') 
+app.config['MAIL_SERVER'] = MAIL_SERVER
+app.config['MAIL_USERNAME'] = MAIL_USERNAME
+app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+app.config['MAIL_DEFAULT_SENDER'] = MAIL_DEFAULT_SENDER
+app.config['MAIL_PORT'] = MAIL_PORT
+app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
+app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
+mail = Mail(app)
+
+s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
+
 
 # Enpoints for Home page -----------------------------------------------------------------------------------------------
 @app.route('/')
 def home():    
     return "<h1>Kudu Web Application RESTful APIs</h1>"
+
+# Endpoints for forgot password
+@app.route('/api/user/forgot-password', methods=['POST'])
+def forgot_password(): 
+   email = request.json['email']   
+
+   # todo checar si el email existe
+
+   token = s.dumps(email, salt=SALT_KEY)
+   link = url_for('reset_password', token=token, _external=True)
+
+   msg = Message('Kudu Reset Password', recipients=[email])
+   msg.body = 'Your link to reset your password is {}'.format(link)
+   mail.send(msg)
+
+   return jsonify({'message': "The email sent succesfully", "token": token})    
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])   
+def reset_password(token):  
+   
+   try:
+      email = s.loads(token, salt=SALT_KEY, max_age=25)
+
+      if request.method == 'GET':
+        return f'''<form action="/reset-password/{token}" method="POST">
+         <h2>Reset Password</h2>
+         <input type="password" name="password">
+         <input type="password" name="confirm-password">
+         <input type="submit"></form>'''
+
+
+      userPassword = request.form['password']
+
+      hashed = bcrypt.hashpw(userPassword.encode('utf-8'), bcrypt.gensalt())
+
+      cur = mysql.connection.cursor()
+      cur.callproc("spUpdateUserPasswordByEmail", [email, hashed])
+      mysql.connection.commit()
+      cur.close()
+
+   except SignatureExpired:
+      return '<h2>The reset-password link is expired!'
+   
+   return '<h2>The password has been reseted succesfully</h2>'
 
 
 

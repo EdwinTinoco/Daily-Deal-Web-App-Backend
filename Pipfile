@@ -11,6 +11,8 @@ flask-mysqldb = "*"
 flask-cors = "*"
 stripe = "*"
 bcrypt = "*"
+flask-mail = "*"
+itsdangerous = "*"
 
 [requires]
 python_version = "3.8"

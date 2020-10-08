@@ -243,6 +243,8 @@ def add_product():
    picture_product = request.json["thumbImage1"]
    product_description = request.json["description"]
    product_price = request.json["price"]
+   product_compare_price = request.json["comparePrice"]
+   product_squ =request.json['squ']
    stock_quantity = request.json["stock"]
    deal_shipping_type_id = request.json["shippingTypeId"]
    # deal_created_date = datetime.datetime.now()
@@ -264,7 +266,7 @@ def add_product():
 
       cur = mysql.connection.cursor()
       cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-      product_description, product_price, product_stripe_id, stock_quantity, deal_shipping_type_id, 
+      product_description, product_price, product_compare_price, product_squ, product_stripe_id, stock_quantity, deal_shipping_type_id, 
       deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
 
       mysql.connection.commit()
@@ -575,6 +577,24 @@ def get_pickup_store_address(id):
 
    return jsonify(pickup_address)
 
+# PUT update the pickup to store address
+@app.route('/api/user/update/pickup-store', methods=['POST'])
+def update_pickup_store_address():
+   user_id = request.json['userId']
+   pickup_name = request.json['storeName']
+   pickup_line_1 = request.json['line1']
+   pickup_line_2 = request.json['line2']
+   pickup_city = request.json['city']
+   pickup_zip_code = request.json['zp']
+   pickup_state = request.json['state']
+
+   cur = mysql.connection.cursor()
+   cur.callproc("spUpdatePickupStoreAddressByUserId", [user_id, pickup_name, pickup_line_1, pickup_line_2, 
+   pickup_city, pickup_zip_code, pickup_state])
+   mysql.connection.commit()
+   cur.close()
+
+   return jsonify({'message': 'The pick up to the store address has been updated succesfully'})
 
 
 

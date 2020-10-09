@@ -13,14 +13,19 @@ from environs import Env
 
 # from secret_key import HOST, USER, PASSWORD, DB
 # from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
-from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
+# from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
-stripe.api_key = TEST_SECRET_KEY
-endpoint_secret = ENPOINT_SECRET_KEY
+env = Env()
+env.read_env() 
+
+stripe.api_key = env("TEST_SECRET_KEY")
+endpoint_secret = env("ENPOINT_SECRET_KEY")
 
 app = Flask(__name__)
 CORS(app)
 heroku = Heroku(app)
+
+
 
 app.config['MYSQL_HOST'] = os.environ.get('HOST')
 app.config['MYSQL_USER'] = os.environ.get('USER')
@@ -29,8 +34,7 @@ app.config['MYSQL_DB'] = os.environ.get('DB')
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
-env = Env()
-env.read_env() 
+
 
 app.config['MAIL_SERVER'] = env("MAIL_SERVER")
 app.config['MAIL_USERNAME'] = env("MAIL_USERNAME")

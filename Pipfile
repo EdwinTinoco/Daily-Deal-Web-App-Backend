@@ -13,6 +13,8 @@ stripe = "*"
 bcrypt = "*"
 flask-mail = "*"
 itsdangerous = "*"
+gunicorn = "*"
+flask-heroku = "*"
 
 [requires]
 python_version = "3.8"

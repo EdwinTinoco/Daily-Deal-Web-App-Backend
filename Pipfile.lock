@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c5cb621e38f4d07a1820301eb8d64898178bb4ea215705b2a53cd477607ab56c"
+            "sha256": "61c70aaf4241f693ccdf3e401d44001e45e17d56e3e9af5efcc0eaed012f2c6a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -113,6 +113,13 @@
             "index": "pypi",
             "version": "==3.0.9"
         },
+        "flask-heroku": {
+            "hashes": [
+                "sha256:ace93c5dd9c9a1b09588a49742153b24435f1ed3d9dcecb8531ffb6e0b4dfb97"
+            ],
+            "index": "pypi",
+            "version": "==0.1.9"
+        },
         "flask-mail": {
             "hashes": [
                 "sha256:22e5eb9a940bf407bcf30410ecc3708f3c56cc44b29c34e1726fe85006935f41"
@@ -126,6 +133,14 @@
             ],
             "index": "pypi",
             "version": "==0.2.0"
+        },
+        "gunicorn": {
+            "hashes": [
+                "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626",
+                "sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"
+            ],
+            "index": "pypi",
+            "version": "==20.0.4"
         },
         "idna": {
             "hashes": [

@@ -20,7 +20,6 @@ app = Flask(__name__)
 CORS(app)
 heroku = Heroku(app)
 
-
 env = Env()
 env.read_env() 
 

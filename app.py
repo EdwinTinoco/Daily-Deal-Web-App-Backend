@@ -23,8 +23,8 @@ heroku = Heroku(app)
 env = Env()
 env.read_env() 
 
-stripe.api_key = "sk_test_51HTxLRAFD2E6aSKkks0bzUK7NgVQwwYZZKwrIy1Nw0gzljAVzwFzpVtmRMzmxAmKpF8cyzNsg0Uzj9adAEO8PQ9j00ofVoa52f"
-endpoint_secret = "whsec_hnNh4VQCfV0EQX3jU2V7TiV73zZ09CEC"
+stripe.api_key = os.environ.get('TEST_SECRET_KEY')
+endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
 
 app.config['MYSQL_HOST'] = os.environ.get('HOST')
 app.config['MYSQL_USER'] = os.environ.get('USER')
@@ -34,25 +34,25 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
 
-app.config['MAIL_SERVER'] = env("MAIL_SERVER")
-app.config['MAIL_USERNAME'] = env("MAIL_USERNAME")
-app.config['MAIL_PASSWORD'] = env("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = env("MAIL_DEFAULT_SENDER")
-app.config['MAIL_PORT'] = env("MAIL_PORT")
-app.config['MAIL_USE_SSL'] = env("MAIL_USE_SSL")
-app.config['MAIL_USE_TLS'] = env("MAIL_USE_TLS")
-mail = Mail(app)
+# app.config['MAIL_SERVER'] = env("MAIL_SERVER")
+# app.config['MAIL_USERNAME'] = env("MAIL_USERNAME")
+# app.config['MAIL_PASSWORD'] = env("MAIL_PASSWORD")
+# app.config['MAIL_DEFAULT_SENDER'] = env("MAIL_DEFAULT_SENDER")
+# app.config['MAIL_PORT'] = env("MAIL_PORT")
+# app.config['MAIL_USE_SSL'] = env("MAIL_USE_SSL")
+# app.config['MAIL_USE_TLS'] = env("MAIL_USE_TLS")
+# mail = Mail(app)
 
-s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
+# s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
 
 
 # Enpoints for Home page -----------------------------------------------------------------------------------------------
 @app.route('/')
 def home():   
 
-   print(env("TEST_SECRET_KEY"))
-   print(env("MAIL_SERVER"))
-   print(env("SALT_KEY"))
+   # print(env("TEST_SECRET_KEY"))
+   # print(env("MAIL_SERVER"))
+   # print(env("SALT_KEY"))
    return "<h1>Kudu Web Application RESTful APIs</h1>"
 
 # Endpoints for forgot password
@@ -62,12 +62,12 @@ def forgot_password():
 
    # todo checar si el email existe
 
-   token = s.dumps(email, salt=env("SALT_KEY"))
-   link = url_for('reset_password', token=token, _external=True)
+   # token = s.dumps(email, salt=env("SALT_KEY"))
+   # link = url_for('reset_password', token=token, _external=True)
 
-   msg = Message('Kudu Reset Password', recipients=[email])
-   msg.body = 'Your link to reset your password is {}'.format(link)
-   mail.send(msg)
+   # msg = Message('Kudu Reset Password', recipients=[email])
+   # msg.body = 'Your link to reset your password is {}'.format(link)
+   # mail.send(msg)
 
    return jsonify({'message': "The email sent succesfully", "token": token})    
 
@@ -75,7 +75,7 @@ def forgot_password():
 def reset_password(token):  
    
    try:
-      email = s.loads(token, salt=env("SALT_KEY"), max_age=25)
+      # email = s.loads(token, salt=env("SALT_KEY"), max_age=25)
 
       if request.method == 'GET':
         return f'''<form action="/reset-password/{token}" method="POST">
@@ -87,12 +87,12 @@ def reset_password(token):
 
       userPassword = request.form['password']
 
-      hashed = bcrypt.hashpw(userPassword.encode('utf-8'), bcrypt.gensalt())
+      # hashed = bcrypt.hashpw(userPassword.encode('utf-8'), bcrypt.gensalt())
 
-      cur = mysql.connection.cursor()
-      cur.callproc("spUpdateUserPasswordByEmail", [email, hashed])
-      mysql.connection.commit()
-      cur.close()
+      # cur = mysql.connection.cursor()
+      # cur.callproc("spUpdateUserPasswordByEmail", [email, hashed])
+      # mysql.connection.commit()
+      # cur.close()
 
    except SignatureExpired:
       return '<h2>The reset-password link is expired!'

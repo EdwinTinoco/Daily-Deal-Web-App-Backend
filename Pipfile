@@ -15,6 +15,7 @@ flask-mail = "*"
 itsdangerous = "*"
 gunicorn = "*"
 flask-heroku = "*"
+environs = "*"
 
 [requires]
 python_version = "3.8"

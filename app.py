@@ -9,9 +9,10 @@ from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_heroku import Heroku
 import os
+from environs import Env
 
 # from secret_key import HOST, USER, PASSWORD, DB
-from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
+# from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
 from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
 stripe.api_key = TEST_SECRET_KEY
@@ -28,17 +29,19 @@ app.config['MYSQL_DB'] = os.environ.get('DB')
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
+env = Env()
+env.read_env() 
 
-app.config['MAIL_SERVER'] = MAIL_SERVER
-app.config['MAIL_USERNAME'] = MAIL_USERNAME
-app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
-app.config['MAIL_DEFAULT_SENDER'] = MAIL_DEFAULT_SENDER
-app.config['MAIL_PORT'] = MAIL_PORT
-app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
-app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
+app.config['MAIL_SERVER'] = env("MAIL_SERVER")
+app.config['MAIL_USERNAME'] = env("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = env("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = env("MAIL_DEFAULT_SENDER")
+app.config['MAIL_PORT'] = env("MAIL_PORT")
+app.config['MAIL_USE_SSL'] = env("MAIL_USE_SSL")
+app.config['MAIL_USE_TLS'] = env("MAIL_USE_TLS")
 mail = Mail(app)
 
-s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
+s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
 
 
 # Enpoints for Home page -----------------------------------------------------------------------------------------------
@@ -53,7 +56,7 @@ def forgot_password():
 
    # todo checar si el email existe
 
-   token = s.dumps(email, salt=SALT_KEY)
+   token = s.dumps(email, salt=env("SALT_KEY"))
    link = url_for('reset_password', token=token, _external=True)
 
    msg = Message('Kudu Reset Password', recipients=[email])
@@ -66,7 +69,7 @@ def forgot_password():
 def reset_password(token):  
    
    try:
-      email = s.loads(token, salt=SALT_KEY, max_age=25)
+      email = s.loads(token, salt=env("SALT_KEY"), max_age=25)
 
       if request.method == 'GET':
         return f'''<form action="/reset-password/{token}" method="POST">

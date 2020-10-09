@@ -23,8 +23,8 @@ heroku = Heroku(app)
 env = Env()
 env.read_env() 
 
-stripe.api_key = env("TEST_SECRET_KEY")
-endpoint_secret = env("ENPOINT_SECRET_KEY")
+# stripe.api_key = env("TEST_SECRET_KEY")
+# endpoint_secret = env("ENPOINT_SECRET_KEY")
 
 
 app.config['MYSQL_HOST'] = os.environ.get('HOST')

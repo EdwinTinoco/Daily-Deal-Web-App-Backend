@@ -27,6 +27,7 @@ env.read_env()
 # endpoint_secret = env("ENPOINT_SECRET_KEY")
 
 
+
 app.config['MYSQL_HOST'] = os.environ.get('HOST')
 app.config['MYSQL_USER'] = os.environ.get('USER')
 app.config['MYSQL_PASSWORD'] = os.environ.get('PASSWORD')

@@ -156,8 +156,8 @@ def create_checkout_session():
             'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
-         success_url= "http://localhost:3000/success/" + sales_deal_id + '?success=true',
-         cancel_url= "http://localhost:3000/deal/product/" + sales_deal_id + '?canceled=true'
+         success_url= "https://et-daily-deal.herokuapp.com/" + sales_deal_id + '?success=true',
+         cancel_url= "https://et-daily-deal.herokuapp.com/" + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 

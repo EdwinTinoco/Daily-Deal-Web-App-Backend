@@ -23,10 +23,8 @@ heroku = Heroku(app)
 env = Env()
 env.read_env() 
 
-# stripe.api_key = env("TEST_SECRET_KEY")
-# endpoint_secret = env("ENPOINT_SECRET_KEY")
-
-
+stripe.api_key = env("TEST_SECRET_KEY")
+endpoint_secret = env("ENPOINT_SECRET_KEY")
 
 app.config['MYSQL_HOST'] = os.environ.get('HOST')
 app.config['MYSQL_USER'] = os.environ.get('USER')
@@ -50,8 +48,12 @@ s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
 
 # Enpoints for Home page -----------------------------------------------------------------------------------------------
 @app.route('/')
-def home():    
-    return "<h1>Kudu Web Application RESTful APIs</h1>"
+def home():   
+
+   print(env("TEST_SECRET_KEY"))
+   print(env("MAIL_SERVER"))
+   print(env("SALT_KEY"))
+   return "<h1>Kudu Web Application RESTful APIs</h1>"
 
 # Endpoints for forgot password
 @app.route('/api/user/forgot-password', methods=['POST'])

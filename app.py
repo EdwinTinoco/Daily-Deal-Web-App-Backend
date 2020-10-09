@@ -291,19 +291,19 @@ def add_customer():
    user_active = request.json['active']
    
    if user_role_title == "business_admin":
+      user_logo = request.json['logo']
       pickup_line_1 = request.json['line1']
       pickup_line_2 = request.json['line2']
       pickup_city = request.json['city']
       pickup_zip_code = request.json['zp']
       pickup_state = request.json['state']
    else:
+      user_logo = ""
       pickup_line_1 = ""
       pickup_line_2 = ""
       pickup_city = ""
       pickup_zip_code = ""
-      pickup_state = ""
-
-   print('email', user_email)
+      pickup_state = ""   
 
    try:
       cur = mysql.connection.cursor()
@@ -328,7 +328,7 @@ def add_customer():
             
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
-         user_stripe_customer_id, pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
+         user_stripe_customer_id, user_logo, pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
          mysql.connection.commit()
 
          cur.execute('SELECT @userId')

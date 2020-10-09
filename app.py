@@ -26,7 +26,7 @@ app.config['MYSQL_DB'] = DB
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
-#app.config.from_pyfile('email.py') 
+
 app.config['MAIL_SERVER'] = MAIL_SERVER
 app.config['MAIL_USERNAME'] = MAIL_USERNAME
 app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
@@ -410,8 +410,6 @@ def login_user():
          return jsonify({'message': "Email or password is wrong"})
    else:
       return jsonify({'message': "Email or password is wrong"}) 
-   
-  
 
 # GET CURRENT USER
 @app.route('/api/user/<id>', methods=['GET'])
@@ -524,7 +522,6 @@ def get_active_deals_totlas(id):
 
    return jsonify(deals_totals)
 
-
 # POST Check if the user already made a purchase
 @app.route('/api/user/check-purchase', methods={'POST'})
 def check_user_purchase():
@@ -540,7 +537,6 @@ def check_user_purchase():
    cur.close()
 
    return jsonify(result)
-
 
 # GET DEALS SALES DETAIL BY PRODUCT DEAL
 @app.route('/api/sales-deal/detail/<id>', methods=['GET'])

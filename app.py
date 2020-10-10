@@ -11,9 +11,9 @@ from flask_heroku import Heroku
 import os
 from environs import Env
 
-# from secret_key import HOST, USER, PASSWORD, DB
-# from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
-# from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
+from secret_key import HOST, USER, PASSWORD, DB
+from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
+from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
 
 app = Flask(__name__)
@@ -26,10 +26,21 @@ env.read_env()
 stripe.api_key = os.environ.get('TEST_SECRET_KEY')
 endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
 
-app.config['MYSQL_HOST'] = os.environ.get('HOST')
-app.config['MYSQL_USER'] = os.environ.get('USER')
-app.config['MYSQL_PASSWORD'] = os.environ.get('PASSWORD')
-app.config['MYSQL_DB'] = os.environ.get('DB')
+stripe.api_key = os.environ.get('TEST_SECRET_KEY')
+endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
+
+# PRODUCTION ENVIRONMENT
+# app.config['MYSQL_HOST'] = os.environ.get('HOST')
+# app.config['MYSQL_USER'] = os.environ.get('USER')
+# app.config['MYSQL_PASSWORD'] = os.environ.get('PASSWORD')
+# app.config['MYSQL_DB'] = os.environ.get('DB')
+# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
+# DEBUG ENVIRONMENT
+app.config['MYSQL_HOST'] = HOST
+app.config['MYSQL_USER'] = USER
+app.config['MYSQL_PASSWORD'] = PASSWORD
+app.config['MYSQL_DB'] = DB
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
@@ -156,8 +167,8 @@ def create_checkout_session():
             'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
-         success_url= "https://et-daily-deal.herokuapp.com/success/" + sales_deal_id + '?success=true',
-         cancel_url= "https://et-daily-deal.herokuapp.com/deal/product/" + sales_deal_id + '?canceled=true'
+         success_url= "http:localhost:5000/success/" + sales_deal_id + '?success=true',
+         cancel_url= "http://localhost:5000/deal/product/" + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 

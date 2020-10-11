@@ -15,7 +15,6 @@ from secret_key import HOST, USER, PASSWORD, DB
 from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
 from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
-
 app = Flask(__name__)
 CORS(app)
 heroku = Heroku(app)
@@ -23,11 +22,13 @@ heroku = Heroku(app)
 env = Env()
 env.read_env() 
 
-stripe.api_key = os.environ.get('TEST_SECRET_KEY')
-endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
+# PRODUCTION ENVIRONMENT
+# stripe.api_key = os.environ.get('TEST_SECRET_KEY')
+# endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
 
-stripe.api_key = os.environ.get('TEST_SECRET_KEY')
-endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
+# DEBUG ENVIRONMENT
+stripe.api_key = TEST_SECRET_KEY
+endpoint_secret = ENPOINT_SECRET_KEY
 
 # PRODUCTION ENVIRONMENT
 # app.config['MYSQL_HOST'] = os.environ.get('HOST')
@@ -167,8 +168,8 @@ def create_checkout_session():
             'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
-         success_url= "http:localhost:5000/success/" + sales_deal_id + '?success=true',
-         cancel_url= "http://localhost:5000/deal/product/" + sales_deal_id + '?canceled=true'
+         success_url= "http://localhost:3000/success/" + sales_deal_id + '?success=true',
+         cancel_url= "http://localhost:3000/deal/product/" + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 
@@ -529,7 +530,7 @@ def get_product_deal_url(id):
    cur = mysql.connection.cursor()
    cur.callproc("spGetActiveDealDetailbyDealId", [id])
    product_deal = cur.fetchall()
-   cur.close()
+   cur.close()   
 
    return jsonify(product_deal)
 
@@ -545,13 +546,14 @@ def get_active_deals_totlas(id):
    return jsonify(deals_totals)
 
 # POST Check if the user already made a purchase
-@app.route('/api/user/check-purchase', methods={'POST'})
+@app.route('/api/user/check-sdp', methods={'POST'})
 def check_user_purchase():
    userId = request.json['userId']
    dealId = request.json['dealId']
+   currentDate = request.json['currentDate']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spCheckCustomerUserMadePurchase", [userId, dealId, ""])
+   cur.callproc("checkStockDatePurchase", [userId, dealId, currentDate, ""])
    mysql.connection.commit()
 
    cur.execute('SELECT @message')

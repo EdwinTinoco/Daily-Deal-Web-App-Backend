@@ -46,14 +46,14 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
 
-# app.config['MAIL_SERVER'] = env("MAIL_SERVER")
-# app.config['MAIL_USERNAME'] = env("MAIL_USERNAME")
-# app.config['MAIL_PASSWORD'] = env("MAIL_PASSWORD")
-# app.config['MAIL_DEFAULT_SENDER'] = env("MAIL_DEFAULT_SENDER")
-# app.config['MAIL_PORT'] = env("MAIL_PORT")
-# app.config['MAIL_USE_SSL'] = env("MAIL_USE_SSL")
-# app.config['MAIL_USE_TLS'] = env("MAIL_USE_TLS")
-# mail = Mail(app)
+app.config['MAIL_SERVER'] = MAIL_SERVER
+app.config['MAIL_USERNAME'] = MAIL_USERNAME
+app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+app.config['MAIL_DEFAULT_SENDER'] = MAIL_DEFAULT_SENDER
+app.config['MAIL_PORT'] = MAIL_PORT
+app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
+app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
+mail = Mail(app)
 
 # s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
 
@@ -161,6 +161,7 @@ def create_checkout_session():
          metadata= {
             'productId': product_id,
             'customerUserId': sales_customer_user_id,
+            'customerEmail': customer_user_email,
             'dealId': sales_deal_id,
             'salesDate': sales_date,
             'subtotal': sales_subtotal,
@@ -256,6 +257,23 @@ def fulfill_order(session):
    mysql.connection.commit()
    cur.close()
 
+   if shipping_title == "Pick up to the store":
+      cur = mysql.connection.cursor()
+      cur.callproc("spGetPickupStoreAddressByDealId", [sales_deal_id])
+      pickup = cur.fetchone()
+      cur.close()
+
+      print(pickup)
+   
+      msg = Message('Kudu Reset Password', recipients=[session['metadata']['customerEmail']])
+      msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
+                  The address is:
+                  {pickup['pickup_line_1']} {pickup['pickup_line_2']}
+                  {pickup['pickup_city']}, {pickup['pickup_state']} 
+                  {pickup['pickup_country']}, {pickup['pickup_zip_code']}
+                  '''
+      mail.send(msg)      
+
    return jsonify('Sale inserted successfully')
 
 # POST a product
@@ -285,11 +303,8 @@ def add_product():
       cur.execute('SELECT @message')
       message = cur.fetchone()  
       cur.close() 
-
-      print(message) 
       
       if message['@message'] == "":
-         print("si entro")
          product = stripe.Product.create(
             name = product_title,
             description = product_description

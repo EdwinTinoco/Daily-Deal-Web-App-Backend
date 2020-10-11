@@ -280,25 +280,37 @@ def add_product():
    deal_status = request.json['dealStatus']  
 
    try:
-      product = stripe.Product.create(
-         name = product_title,
-         description = product_description
-      )
-
-      product_stripe_id = product['id']
-
       cur = mysql.connection.cursor()
-      cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-      product_description, product_price, product_compare_price, product_squ, product_stripe_id, stock_quantity, deal_shipping_type_id, 
-      deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
+      cur.callproc("spCheckIfActiveDeal", [product_user_id, ""])
+      cur.execute('SELECT @message')
+      message = cur.fetchone()  
+      cur.close() 
 
-      mysql.connection.commit()
+      print(message) 
+      
+      if message['@message'] == "":
+         print("si entro")
+         product = stripe.Product.create(
+            name = product_title,
+            description = product_description
+         )
 
-      cur.execute('SELECT @dealId, @generatedDealProductUrl')
-      result = cur.fetchone() 
-      cur.close()
+         product_stripe_id = product['id']
 
-      return jsonify({'message': "Product created succesfully", 'result': result}), 200
+         cur = mysql.connection.cursor()
+         cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
+         product_description, product_price, product_compare_price, product_squ, product_stripe_id, stock_quantity, deal_shipping_type_id, 
+         deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, ""])
+
+         mysql.connection.commit()
+
+         cur.execute('SELECT @dealId, @generatedDealProductUrl')
+         result = cur.fetchone() 
+         cur.close()
+
+         return jsonify({'message': '', 'result': result}), 200
+      else:
+         return jsonify({'message': message['@message']})
 
    except Exception as e:
       return jsonify(error=str(e)), 403

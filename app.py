@@ -11,7 +11,7 @@ from flask_heroku import Heroku
 import os
 from environs import Env
 
-from secret_key import HOST, USER, PASSWORD, DB
+from secret_key import HOST, USER, PASSWORD, DB, MASTER_ADMIN_CODE
 from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
 from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
 
@@ -265,7 +265,7 @@ def fulfill_order(session):
 
       print(pickup)
    
-      msg = Message('Kudu Reset Password', recipients=[session['metadata']['customerEmail']])
+      msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
       msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
                   The address is:
                   {pickup['pickup_line_1']} {pickup['pickup_line_2']}
@@ -339,6 +339,9 @@ def add_customer():
    user_email = request.json['email']
    user_password = request.json['password']
    user_active = request.json['active']
+
+   if user_role_title == "master_admin":
+      adminCode = request.json['code']
    
    if user_role_title == "business_admin":
       user_logo = request.json['logo']
@@ -354,7 +357,7 @@ def add_customer():
       pickup_city = ""
       pickup_zip_code = ""
       pickup_state = ""   
-
+   
    try:
       cur = mysql.connection.cursor()
       cur.callproc("spCheckEmailExist", [user_email, "", ""])
@@ -366,6 +369,35 @@ def add_customer():
 
       if message['@message'] == "A user with that email already exist":
          return jsonify({'message': message['@message']}) 
+
+      elif user_role_title == "master_admin":
+         hash_code = bcrypt.hashpw(MASTER_ADMIN_CODE.encode('utf-8'), bcrypt.gensalt())
+         print('admin code', adminCode)
+         print('hash code', hash_code)
+         #revisar este if porquem no funciona
+         if bcrypt.checkpw(adminCode.encode('utf-8'), hash_code.encode('utf-8')):
+            print('si entro master admin')
+            customer = stripe.Customer.create(
+               email = user_email,
+               name = user_name
+            )
+
+            user_stripe_customer_id = customer['id']
+
+            hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
+               
+            cur = mysql.connection.cursor()
+            cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
+            user_stripe_customer_id, user_logo, pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
+            mysql.connection.commit()
+
+            cur.execute('SELECT @userId')
+            result = cur.fetchone() 
+            cur.close()        
+
+            return jsonify({'message': "Customer created succesfully", 'result': result}), 200
+         else:
+            return jsonify({'message': 'The admin code is wrong'})
       else:
          customer = stripe.Customer.create(
             email = user_email,
@@ -375,7 +407,7 @@ def add_customer():
          user_stripe_customer_id = customer['id']
 
          hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
-            
+               
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
          user_stripe_customer_id, user_logo, pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])

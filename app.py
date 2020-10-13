@@ -55,16 +55,12 @@ app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
 app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
 mail = Mail(app)
 
-# s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
+s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
 
 
 # Enpoints for Home page -----------------------------------------------------------------------------------------------
 @app.route('/')
 def home():   
-
-   # print(env("TEST_SECRET_KEY"))
-   # print(env("MAIL_SERVER"))
-   # print(env("SALT_KEY"))
    return "<h1>Kudu Web Application RESTful APIs</h1>"
 
 # Endpoints for forgot password
@@ -72,39 +68,49 @@ def home():
 def forgot_password(): 
    email = request.json['email']   
 
-   # todo checar si el email existe
+   cur = mysql.connection.cursor()
+   cur.callproc("spCheckEmailExist", [email, "", ""])
+   cur.execute('SELECT @message, @userPassword')
+   message = cur.fetchone()  
+   cur.close() 
 
-   # token = s.dumps(email, salt=env("SALT_KEY"))
-   # link = url_for('reset_password', token=token, _external=True)
+   print(message)      
 
-   # msg = Message('Kudu Reset Password', recipients=[email])
-   # msg.body = 'Your link to reset your password is {}'.format(link)
-   # mail.send(msg)
+   if message['@message'] == "A user with that email already exist":
+      token = s.dumps(email, salt=env("SALT_KEY"))
+      link = url_for('reset_password', token=token, _external=True)
 
-   return jsonify({'message': "The email sent succesfully", "token": token})    
+      msg = Message('Kudu Reset Password', recipients=[email])
+      msg.body = 'Your link to reset your password is {}'.format(link)
+      mail.send(msg)
+
+      return jsonify({'message': "The email sent succesfully", "token": token})    
+   else:
+      return jsonify({'message': message['@message']}) 
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])   
 def reset_password(token):  
    
    try:
-      # email = s.loads(token, salt=env("SALT_KEY"), max_age=25)
+      email = s.loads(token, salt=env("SALT_KEY"), max_age=90)
 
       if request.method == 'GET':
         return f'''<form action="/reset-password/{token}" method="POST">
          <h2>Reset Password</h2>
-         <input type="password" name="password">
-         <input type="password" name="confirm-password">
+         <label for="password">New Password</label>
+         <input type="password" name="password" placeholder="New Password">
+         <label for="confirm-password">Confirm New Password</label>
+         <input type="password" name="confirm-password" placeholder="Confirm New Password">
          <input type="submit"></form>'''
-
 
       userPassword = request.form['password']
 
-      # hashed = bcrypt.hashpw(userPassword.encode('utf-8'), bcrypt.gensalt())
+      hashed = bcrypt.hashpw(userPassword.encode('utf-8'), bcrypt.gensalt())
 
-      # cur = mysql.connection.cursor()
-      # cur.callproc("spUpdateUserPasswordByEmail", [email, hashed])
-      # mysql.connection.commit()
-      # cur.close()
+      cur = mysql.connection.cursor()
+      cur.callproc("spUpdateUserPasswordByEmail", [email, hashed])
+      mysql.connection.commit()
+      cur.close()
 
    except SignatureExpired:
       return '<h2>The reset-password link is expired!'

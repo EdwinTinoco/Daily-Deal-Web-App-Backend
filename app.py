@@ -472,6 +472,7 @@ def add_customer():
 def login_user():
    userEmail = request.json['email']
    user_password = request.json['password']  
+   currentDate = request.json['currentDate']  
    
    cur = mysql.connection.cursor()
    cur.callproc("spCheckEmailExist", [userEmail, "", ""])
@@ -484,11 +485,12 @@ def login_user():
 
       if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
          cur = mysql.connection.cursor()
-         cur.callproc("spLoginUser", [userEmail, hash_password])
-         user = cur.fetchall()
+         cur.callproc("spLoginUser", [userEmail, hash_password, currentDate, 0, "", ""])
+         cur.execute('SELECT @uId, @uEmail, @uRole')
+         user = cur.fetchone()
          cur.close()
 
-         return jsonify({'message': 'Login successfully', 'user': user})         
+         return jsonify({'message': 'Login successfully', 'user': [{'user_id': user['@uId'], 'user_email': user['@uEmail'], 'role_title': user['@uRole']}]})         
       else:
          return jsonify({'message': "Email or password is wrong"})
    else:

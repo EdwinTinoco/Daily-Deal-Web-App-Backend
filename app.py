@@ -235,7 +235,6 @@ def fulfill_order(session):
       state = ""
       country = ""
 
-
    total = session['amount_total'] / 100
 
    product_id = session['metadata']['productId']

@@ -371,12 +371,8 @@ def add_customer():
          return jsonify({'message': message['@message']}) 
 
       elif user_role_title == "master_admin":
-         hash_code = bcrypt.hashpw(MASTER_ADMIN_CODE.encode('utf-8'), bcrypt.gensalt())
-         print('admin code', adminCode)
-         print('hash code', hash_code)
-         #revisar este if porquem no funciona
-         if bcrypt.checkpw(adminCode.encode('utf-8'), hash_code.encode('utf-8')):
-            print('si entro master admin')
+         
+         if adminCode == MASTER_ADMIN_CODE:
             customer = stripe.Customer.create(
                email = user_email,
                name = user_name

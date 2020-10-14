@@ -626,9 +626,19 @@ def get_sales_deal(id):
 
 # GET CHART ALL DEALS TOTAL SALES BY BUSINESS USER ID
 @app.route('/api/ba/all-deals/totals/<id>', methods=['GET'])
-def get_sales_all_deals(id):
+def get_sales_all_deals_business(id):
    cur = mysql.connection.cursor()
    cur.callproc("spGetBaChartAllDealsTotalsByBusinessUserId", [id])
+   sales_deal = cur.fetchall()
+   cur.close()
+
+   return jsonify(sales_deal)
+
+# GET CHART ALL DEALS TOTAL SALES BY MASTER ACCOUNT
+@app.route('/api/ma/all-deals/totals', methods=['GET'])
+def get_sales_all_deals_master():
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetMaChartAllDealsTotalsByMasterAccount", ())
    sales_deal = cur.fetchall()
    cur.close()
 

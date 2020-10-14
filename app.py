@@ -557,10 +557,10 @@ def get_shipping_types():
 
 # Enpoints for product_deals table--------------------------------------------------------------------------------
 # GET the active deal by user and active status - for business account
-@app.route('/api/active-deals/<id>', methods=['GET'])
+@app.route('/api/ba/deals/<id>', methods=['GET'])
 def get_active_deal(id):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetActiveDealsByUserId", [id])
+   cur.callproc("spGetBaDealsByUserId", [id])
    deal = cur.fetchall()
    cur.close()
 
@@ -577,10 +577,10 @@ def get_active_deal_detail(id):
    return jsonify(deal)
 
 # GET all active deals - for master admin account
-@app.route('/api/all-active-deals', methods=['GET'])
+@app.route('/api/ma/all-active-deals', methods=['GET'])
 def get_all_active_deal():
    cur = mysql.connection.cursor()
-   cur.callproc("spMAGetAllActiveDeals", ())
+   cur.callproc("spGetMaAllActiveDeals", ())
    all_deals = cur.fetchall()
    cur.close()
 
@@ -597,16 +597,6 @@ def get_product_deal_url(id):
    return jsonify(product_deal)
 
 # Enpoints for sales table--------------------------------------------------------------------------------
-# GET the active deals totals by user id
-@app.route('/api/active-deals/totals/<id>', methods=['GET'])
-def get_active_deals_totlas(id):
-   cur = mysql.connection.cursor()
-   cur.callproc("spGetActiveDealsTotalsByUserId", [id])
-   deals_totals = cur.fetchall()
-   cur.close()
-
-   return jsonify(deals_totals)
-
 # POST Check if the user already made a purchase
 @app.route('/api/user/check-sdp', methods={'POST'})
 def check_user_purchase():
@@ -629,6 +619,16 @@ def check_user_purchase():
 def get_sales_deal(id):
    cur = mysql.connection.cursor()
    cur.callproc("spGetSalesByDealId", [id])
+   sales_deal = cur.fetchall()
+   cur.close()
+
+   return jsonify(sales_deal)
+
+# GET CHART ALL DEALS TOTAL SALES BY BUSINESS USER ID
+@app.route('/api/ba/all-deals/totals/<id>', methods=['GET'])
+def get_sales_all_deals(id):
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetBaChartAllDealsTotalsByBusinessUserId", [id])
    sales_deal = cur.fetchall()
    cur.close()
 

@@ -11,26 +11,38 @@ from flask_heroku import Heroku
 import os
 from environs import Env
 
-# from secret_key import HOST, USER, PASSWORD, DB, MASTER_ADMIN_CODE
-# from email_key import MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS, URL_SAFE_SERIALIZER_KEY, SALT_KEY
-# from stripe_keys import TEST_SECRET_KEY, SUCCESS_URL, CANCEL_URL, ENPOINT_SECRET_KEY, TAX_RATE_ID
-TEST_SECRET_KEY = os.environ.get("TEST_SECRET_KEY")
 
 app = Flask(__name__)
 CORS(app)
 heroku = Heroku(app)
 
-env = Env()
-env.read_env() 
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#Enviroment Variables
+HOST = os.environ.get("HOST")
+USER = os.environ.get("USER")
+PASSWORD = os.environ.get("PASSWORD")
+DB = os.environ.get("DB")
+MASTER_ADMIN_CODE =os.environ.get("MASTER_ADMIN_CODE")
 
-# PRODUCTION ENVIRONMENT
-# stripe.api_key = os.environ.get('TEST_SECRET_KEY')
-# endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
+MAIL_SERVER = os.environ.get("MAIL_SERVER")
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
+MAIL_PORT = os.environ.get("MAIL_PORT")
+MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL")
+MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
+URL_SAFE_SERIALIZER_KEY = os.environ.get("URL_SAFE_SERIALIZER_KEY")
+SALT_KEY = os.environ.get("SALT_KEY")
 
-# DEBUG ENVIRONMENT
-stripe.api_key = TEST_SECRET_KEY
-endpoint_secret = ENPOINT_SECRET_KEY
+TEST_SECRET_KEY = os.environ.get("TEST_SECRET_KEY")
+SUCCESS_URL = os.environ.get("SUCCESS_URL")
+CANCEL_URL = os.environ.get("CANCEL_URL")
+ENPOINT_SECRET_KEY = os.environ.get("ENPOINT_SECRET_KEY")
+TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
 
+
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# MYSQL DATABASE ENVIRONMENT VARIABLES
 # PRODUCTION ENVIRONMENT
 # app.config['MYSQL_HOST'] = os.environ.get('HOST')
 # app.config['MYSQL_USER'] = os.environ.get('USER')
@@ -46,7 +58,9 @@ app.config['MYSQL_DB'] = DB
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
-
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# EMAIL SERVER ENVIRONMENT VARIABLES
+# DEBUG ENVIRONMENT
 app.config['MAIL_SERVER'] = MAIL_SERVER
 app.config['MAIL_USERNAME'] = MAIL_USERNAME
 app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
@@ -55,11 +69,20 @@ app.config['MAIL_PORT'] = MAIL_PORT
 app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
 app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
 mail = Mail(app)
+s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
 
-s = URLSafeTimedSerializer(env("URL_SAFE_SERIALIZER_KEY"))
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# STRIPE ENVIRONMENT VARIABLES
+# PRODUCTION ENVIRONMENT
+# stripe.api_key = os.environ.get('TEST_SECRET_KEY')
+# endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
+
+# DEBUG ENVIRONMENT
+stripe.api_key = TEST_SECRET_KEY
+endpoint_secret = ENPOINT_SECRET_KEY
 
 
-# Enpoints for Home page -----------------------------------------------------------------------------------------------
+# Enpoints for Home page --------------------------------------------------------------------------------------------------------------------------
 @app.route('/')
 def home():   
    return "<h1>Kudu Web Application RESTful APIs</h1>"
@@ -90,8 +113,7 @@ def forgot_password():
       return jsonify({'message': message['@message']}) 
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])   
-def reset_password(token):  
-   
+def reset_password(token):     
    try:
       email = s.loads(token, salt=env("SALT_KEY"), max_age=90)
 
@@ -117,7 +139,6 @@ def reset_password(token):
       return '<h2>The reset-password link is expired!'
    
    return '<h2>The password has been reseted succesfully</h2>'
-
 
 
 # STRIPE ENDPOINTS --------------------------------------------------------------------------------------------------------
@@ -176,8 +197,8 @@ def create_checkout_session():
             'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
-         success_url= "http://localhost:3000/success/" + sales_deal_id + '?success=true',
-         cancel_url= "http://localhost:3000/deal/product/" + sales_deal_id + '?canceled=true'
+         success_url= SUCCESS_URL + sales_deal_id + '?success=true',
+         cancel_url= CANCEL_URL + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 

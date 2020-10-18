@@ -67,7 +67,7 @@ app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
 app.config['MAIL_DEFAULT_SENDER'] = MAIL_DEFAULT_SENDER
 app.config['MAIL_PORT'] = MAIL_PORT
 app.config['MAIL_USE_SSL'] = MAIL_USE_SSL
-app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
+# app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
 mail = Mail(app)
 s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
 
@@ -101,7 +101,7 @@ def forgot_password():
    print(message)      
 
    if message['@message'] == "A user with that email already exist":
-      token = s.dumps(email, salt=env("SALT_KEY"))
+      token = s.dumps(email, salt=SALT_KEY)
       link = url_for('reset_password', token=token, _external=True)
 
       msg = Message('Kudu Reset Password', recipients=[email])
@@ -115,7 +115,7 @@ def forgot_password():
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])   
 def reset_password(token):     
    try:
-      email = s.loads(token, salt=env("SALT_KEY"), max_age=90)
+      email = s.loads(token, salt=SALT_KEY, max_age=90)
 
       if request.method == 'GET':
         return f'''<form action="/reset-password/{token}" method="POST">

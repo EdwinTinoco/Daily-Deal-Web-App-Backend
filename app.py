@@ -343,7 +343,6 @@ def add_product():
          cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
          product_description, product_price, product_compare_price, product_squ, product_stripe_id, stock_quantity, deal_shipping_type_id, 
          deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, ""])
-
          mysql.connection.commit()
 
          cur.execute('SELECT @dealId, @generatedDealProductUrl')
@@ -507,12 +506,14 @@ def login_user():
 
       if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
          cur = mysql.connection.cursor()
-         cur.callproc("spLoginUser", [userEmail, hash_password, currentDate, 0, "", ""])
-         cur.execute('SELECT @uId, @uEmail, @uRole')
+         cur.callproc("spLoginUser", [userEmail, hash_password, currentDate, 0, "", 0, 0])
+         cur.execute('SELECT @uId, @uRole, @counterDate, @tempDealId')
          user = cur.fetchone()
          cur.close()
 
-         return jsonify({'message': 'Login successfully', 'user': [{'user_id': user['@uId'], 'user_email': user['@uEmail'], 'role_title': user['@uRole']}]})         
+         print(user)
+
+         return jsonify({'message': 'Login successfully', 'user': [{'user_id': user['@uId'], 'user_email': userEmail, 'role_title': user['@uRole']}]})         
       else:
          return jsonify({'message': "Email or password is wrong"})
    else:

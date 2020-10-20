@@ -85,7 +85,7 @@ endpoint_secret = ENPOINT_SECRET_KEY
 # Enpoints for Home page --------------------------------------------------------------------------------------------------------------------------
 @app.route('/')
 def home():   
-   return "<h1>Kudu Web Application RESTful APIs</h1>"
+   return "<h1>testing www.kudu.live Web Application RESTful APIs</h1>"
 
 # Endpoints for forgot password
 @app.route('/api/user/forgot-password', methods=['POST'])

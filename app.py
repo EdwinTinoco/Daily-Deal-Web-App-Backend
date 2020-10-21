@@ -14,7 +14,6 @@ import os
 
 
 app = Flask(__name__)
-# CORS(app)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://www.joinkudu.com", "https://et-daily-deal.herokuapp.com", "http://et-daily-deal.herokuapp.com"]}})
 heroku = Heroku(app)
 
@@ -304,7 +303,7 @@ def add_product():
    product_description = request.json["description"]
    product_price = request.json["price"]
    product_compare_price = request.json["comparePrice"]
-   product_squ =request.json['squ']
+   product_sku =request.json['sku']
    stock_quantity = request.json["stock"]
    deal_shipping_type_id = request.json["shippingTypeId"]
    # deal_created_date = datetime.datetime.now()
@@ -333,7 +332,7 @@ def add_product():
 
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-         product_description, product_price, product_compare_price, product_squ, product_stripe_id, stock_quantity, deal_shipping_type_id, 
+         product_description, product_price, product_compare_price, product_sku, product_stripe_id, stock_quantity, deal_shipping_type_id, 
          deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, ""])
          mysql.connection.commit()
 

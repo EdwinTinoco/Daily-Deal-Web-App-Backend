@@ -15,7 +15,7 @@ import os
 
 app = Flask(__name__)
 # CORS(app)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://www.joinkudu.com"]}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://www.joinkudu.com/", "https://et-daily-deal.herokuapp.com/", "http://et-daily-deal.herokuapp.com/"]}})
 heroku = Heroku(app)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------

@@ -9,11 +9,13 @@ from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_heroku import Heroku
 import os
-from environs import Env
+# from environs import Env
+# from dotenv import load_dotenv
 
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://www.joinkudu.com"]}})
 heroku = Heroku(app)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,7 +24,7 @@ HOST = os.environ.get("HOST")
 USER = os.environ.get("USER")
 PASSWORD = os.environ.get("PASSWORD")
 DB = os.environ.get("DB")
-MASTER_ADMIN_CODE =os.environ.get("MASTER_ADMIN_CODE")
+MASTER_ADMIN_CODE = os.environ.get("MASTER_ADMIN_CODE")
 
 MAIL_SERVER = os.environ.get("MAIL_SERVER")
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
@@ -43,13 +45,6 @@ TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # MYSQL DATABASE ENVIRONMENT VARIABLES
-# PRODUCTION ENVIRONMENT
-# app.config['MYSQL_HOST'] = os.environ.get('HOST')
-# app.config['MYSQL_USER'] = os.environ.get('USER')
-# app.config['MYSQL_PASSWORD'] = os.environ.get('PASSWORD')
-# app.config['MYSQL_DB'] = os.environ.get('DB')
-# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
 # DEBUG ENVIRONMENT
 app.config['MYSQL_HOST'] = HOST
 app.config['MYSQL_USER'] = USER
@@ -73,10 +68,6 @@ s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # STRIPE ENVIRONMENT VARIABLES
-# PRODUCTION ENVIRONMENT
-# stripe.api_key = os.environ.get('TEST_SECRET_KEY')
-# endpoint_secret = os.environ.get('ENPOINT_SECRET_KEY')
-
 # DEBUG ENVIRONMENT
 stripe.api_key = TEST_SECRET_KEY
 endpoint_secret = ENPOINT_SECRET_KEY
@@ -85,6 +76,7 @@ endpoint_secret = ENPOINT_SECRET_KEY
 # Enpoints for Home page --------------------------------------------------------------------------------------------------------------------------
 @app.route('/')
 def home():   
+   print(HOST,MAIL_USERNAME, SALT_KEY)
    return "<h1>testing www.kudu.live Web Application RESTful APIs</h1>"
 
 # Endpoints for forgot password

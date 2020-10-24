@@ -659,7 +659,7 @@ def get_sales_all_deals_master():
    return jsonify(sales_deal)
 
 
-# ENDPOINTS For product_stock TABLE
+# ENDPOINTS For product_stock TABLE -------------------------------------------------------------------------------------------------------
 # GET how many items are in stock
 @app.route('/api/check-stock-left/<id>', methods=['GET'])
 def check_stock(id):
@@ -671,21 +671,22 @@ def check_stock(id):
    return jsonify(stock)
 
 
-# ENDPOINTS For pickup_store_addresses TABLE
-# GET PICK UP STORE ADDRESS
-@app.route('/api/user/pickup-store/<id>', methods=['GET'])
-def get_pickup_store_address(id):
+# ENDPOINTS For business_address TABLE ---------------------------------------------------------------------------------------------------------------------
+# GET BUSINESS ADDRESS NY USER ID
+@app.route('/api/user/business-address/<id>', methods=['GET'])
+def get_business_address(id):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetPickupStoreAddressByUserId", [id])
-   pickup_address = cur.fetchall()
+   cur.callproc("spGetBusinessAddressByUserId", [id])
+   business_address = cur.fetchall()
 
    cur.close()
 
-   return jsonify(pickup_address)
+   return jsonify(business_address)
 
-# PUT update the pickup to store address
-@app.route('/api/user/pickup-store/add', methods=['POST'])
-def add_pickup_store_address():
+# ENDPOINTS For deal_pickup_address TABLE
+# POST pickup address
+@app.route('/api/user/pickup-address/add', methods=['POST'])
+def add_pickup_address():
    pickup_deal_id = request.json['dealId']
    pickup_name = request.json['storeName']
    pickup_line_1 = request.json['line1']
@@ -696,7 +697,7 @@ def add_pickup_store_address():
    pickup_country = request.json['country']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spInsertPickupStoreAddress", [pickup_deal_id, pickup_name, pickup_line_1, pickup_line_2, 
+   cur.callproc("spInsertPickupAddress", [pickup_deal_id, pickup_name, pickup_line_1, pickup_line_2, 
    pickup_city, pickup_zip_code, pickup_state, pickup_country])
    mysql.connection.commit()
    cur.close()

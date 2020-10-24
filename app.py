@@ -42,10 +42,10 @@ TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # MYSQL DATABASE ENVIRONMENT VARIABLES
 # DEBUG ENVIRONMENT
-app.config['MYSQL_HOST'] = HOST
-app.config['MYSQL_USER'] = USER
-app.config['MYSQL_PASSWORD'] = PASSWORD
-app.config['MYSQL_DB'] = DB
+app.config['MYSQL_HOST'] = "localhost"
+app.config['MYSQL_USER'] = "root"
+app.config['MYSQL_PASSWORD'] = "benjy2012!"
+app.config['MYSQL_DB'] = "local_kudu_db"
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 

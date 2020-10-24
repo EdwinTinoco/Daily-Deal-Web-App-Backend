@@ -327,9 +327,18 @@ def add_product():
 
          product_stripe_id = product['id']
 
+         sku = stripe.SKU.create(
+            price=product_price * 100,
+            currency="usd",
+            inventory={"type": "finite", "quantity": stock_quantity},
+            product=product_stripe_id,
+         )
+
+         product_stripe_sku_id = sku['id']
+
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-         product_description, product_price, product_compare_price, product_sku, product_stripe_id, stock_quantity, deal_shipping_type_id, 
+         product_description, product_price, product_compare_price, product_sku, product_stripe_id, product_stripe_sku_id, stock_quantity, deal_shipping_type_id, 
          deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, ""])
          mysql.connection.commit()
 

@@ -684,23 +684,24 @@ def get_pickup_store_address(id):
    return jsonify(pickup_address)
 
 # PUT update the pickup to store address
-@app.route('/api/user/update/pickup-store', methods=['POST'])
-def update_pickup_store_address():
-   user_id = request.json['userId']
+@app.route('/api/user/pickup-store/add', methods=['POST'])
+def add_pickup_store_address():
+   pickup_deal_id = request.json['dealId']
    pickup_name = request.json['storeName']
    pickup_line_1 = request.json['line1']
    pickup_line_2 = request.json['line2']
    pickup_city = request.json['city']
    pickup_zip_code = request.json['zp']
    pickup_state = request.json['state']
+   pickup_country = request.json['country']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spUpdatePickupStoreAddressByUserId", [user_id, pickup_name, pickup_line_1, pickup_line_2, 
-   pickup_city, pickup_zip_code, pickup_state])
+   cur.callproc("spInsertPickupStoreAddress", [pickup_deal_id, pickup_name, pickup_line_1, pickup_line_2, 
+   pickup_city, pickup_zip_code, pickup_state, pickup_country])
    mysql.connection.commit()
    cur.close()
 
-   return jsonify({'message': 'The pick up to the store address has been updated succesfully'})
+   return jsonify({'message': 'The pick up to the store address has been inserted succesfully'})
 
 
 

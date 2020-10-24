@@ -277,7 +277,7 @@ def fulfill_order(session):
 
    if shipping_title == "Pick up to the store":
       cur = mysql.connection.cursor()
-      cur.callproc("spGetPickupStoreAddressByDealId", [sales_deal_id])
+      cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])
       pickup = cur.fetchone()
       cur.close()
 

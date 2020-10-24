@@ -702,7 +702,7 @@ def add_pickup_address():
    mysql.connection.commit()
    cur.close()
 
-   return jsonify({'message': 'The pick up to the store address has been inserted succesfully'})
+   return jsonify({'message': 'The pick up address has been inserted succesfully'})
 
 
 

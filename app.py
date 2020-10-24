@@ -9,9 +9,6 @@ from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_heroku import Heroku
 import os
-# from environs import Env
-# from dotenv import load_dotenv
-
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://www.joinkudu.com", "https://et-daily-deal.herokuapp.com", "http://et-daily-deal.herokuapp.com"]}})

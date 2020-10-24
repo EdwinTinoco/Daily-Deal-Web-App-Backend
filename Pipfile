@@ -16,7 +16,6 @@ itsdangerous = "*"
 gunicorn = "*"
 flask-heroku = "*"
 environs = "*"
-python-dotenv = "*"
 
 [requires]
 python_version = "3.8"

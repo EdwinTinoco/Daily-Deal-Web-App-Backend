@@ -284,9 +284,8 @@ def fulfill_order(session):
       print(pickup)
    
       msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
-      msg.body = f'''You need to pick the product up in following address:
-                  Store: 
-                  {pickup['pickup_name']}
+      msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
+                  The address is:
                   {pickup['pickup_line_1']} {pickup['pickup_line_2']}
                   {pickup['pickup_city']}, {pickup['pickup_state']} 
                   {pickup['pickup_country']}, {pickup['pickup_zip_code']}

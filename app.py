@@ -321,20 +321,29 @@ def add_product():
       
       if message['@message'] == "":
          product = stripe.Product.create(
+            attributes = ["name"],
             name = product_title,
-            description = product_description
+            description = product_description,
+            type = "good"
          )
 
+         print(product)  
          product_stripe_id = product['id']
+         print(product_stripe_id)
 
-         sku = stripe.SKU.create(
-            price=product_price * 100,
+         price = int(float(product_price) * 100)
+
+         sku = stripe.SKU.create(       
+            attributes={"name": product_title}, 
+            price=price,
             currency="usd",
             inventory={"type": "finite", "quantity": stock_quantity},
-            product=product_stripe_id,
+            product=product_stripe_id
          )
 
+         print(sku)
          product_stripe_sku_id = sku['id']
+         print(sku['id'])         
 
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 

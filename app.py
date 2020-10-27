@@ -11,7 +11,7 @@ from flask_heroku import Heroku
 import os
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://www.joinkudu.com", "https://et-daily-deal.herokuapp.com", "http://et-daily-deal.herokuapp.com"]}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://www.joinkudu.com", "http://www.joinkudu.com", "https://et-daily-deal.herokuapp.com", "http://et-daily-deal.herokuapp.com"]}})
 heroku = Heroku(app)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------

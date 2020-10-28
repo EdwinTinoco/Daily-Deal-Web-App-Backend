@@ -272,24 +272,30 @@ def fulfill_order(session):
    mysql.connection.commit()
    cur.close()
 
-   if shipping_title == "Pick up to the store":
-      cur = mysql.connection.cursor()
-      cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])
-      pickup = cur.fetchone()
-      cur.close()
+   try:
+      error_message = ""
+      
+      if shipping_title == "Pick up to the store":
+         cur = mysql.connection.cursor()
+         cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])
+         pickup = cur.fetchone()
+         cur.close()
 
-      print(pickup)
-   
-      msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
-      msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
-                  The address is:
-                  {pickup['pickup_line_1']} {pickup['pickup_line_2']}
-                  {pickup['pickup_city']}, {pickup['pickup_state']} 
-                  {pickup['pickup_country']}, {pickup['pickup_zip_code']}
-                  '''
-      mail.send(msg)      
+         print(pickup)
+      
+         msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
+         msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
+                     The address is:
+                     {pickup['pickup_line_1']} {pickup['pickup_line_2']}
+                     {pickup['pickup_city']}, {pickup['pickup_state']} 
+                     {pickup['pickup_country']}, {pickup['pickup_zip_code']}
+                     '''
+         mail.send(msg)   
+   except Exception as e:
+      error_message = "There was an issue with the email to send the pickup address. Contact support services."
+       
 
-   return jsonify('Sale inserted successfully')
+   return jsonify({'message': 'Sale inserted successfully', 'errorMessage': error_message})
 
 # POST a product
 @app.route('/v1/products', methods=['POST'])

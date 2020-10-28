@@ -101,7 +101,7 @@ def forgot_password():
       else:
          return jsonify({'message': message['@message']}) 
    except Exception as e:
-      return jsonify(error=str(e)), 403
+      return jsonify({'message': error=str(e)})
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])   
 def reset_password(token):     

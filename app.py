@@ -219,7 +219,7 @@ def my_webhook():
       fulfill_order(session)
 
    # Passed signature verification
-   return jsonify("Successfull payment with webhooks"), 200
+   return jsonify("Successfull events with webhooks"), 200
 
 def fulfill_order(session): 
    print(session)

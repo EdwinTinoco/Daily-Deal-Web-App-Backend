@@ -272,22 +272,22 @@ def fulfill_order(session):
    mysql.connection.commit()
    cur.close()
 
-   if shipping_title == "Pick up to the store":
-      cur = mysql.connection.cursor()
-      cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])
-      pickup = cur.fetchone()
-      cur.close()
+   # if shipping_title == "Pick up to the store":
+   #    cur = mysql.connection.cursor()
+   #    cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])
+   #    pickup = cur.fetchone()
+   #    cur.close()
 
-      print(pickup)
+   #    print(pickup)
    
-      msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
-      msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
-                  The address is:
-                  {pickup['pickup_line_1']} {pickup['pickup_line_2']}
-                  {pickup['pickup_city']}, {pickup['pickup_state']} 
-                  {pickup['pickup_country']}, {pickup['pickup_zip_code']}
-                  '''
-      mail.send(msg)      
+   #    msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
+   #    msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
+   #                The address is:
+   #                {pickup['pickup_line_1']} {pickup['pickup_line_2']}
+   #                {pickup['pickup_city']}, {pickup['pickup_state']} 
+   #                {pickup['pickup_country']}, {pickup['pickup_zip_code']}
+   #                '''
+   #    mail.send(msg)      
 
    return jsonify('Sale inserted successfully')
 

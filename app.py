@@ -362,7 +362,6 @@ def add_product():
    except Exception as e:
       return jsonify(error=str(e)), 403
 
-
 # POST a customer
 @app.route('/v1/customers', methods=['POST'])
 def add_customer():
@@ -450,50 +449,7 @@ def add_customer():
    except Exception as e:
       return jsonify(error=str(e)), 403
 
-
-
-# Enpoints for users table------------------------------------------------------------------------
-# @app.route('/api/user/signup', methods=['POST'])
-# def signup_user(): 
-#    user_role_title = request.json['role']
-#    user_name = request.json['name']
-#    user_email = request.json['email']
-#    user_password = request.json['password']
-#    user_active = request.json['active']
-#    pickup_line_1 = request.json['line1']
-#    pickup_line_2 = request.json['line2']
-#    pickup_city = request.json['city']
-#    pickup_zip_code = request.json['zp']
-#    pickup_state = request.json['state']
-
-#    cur = mysql.connection.cursor()
-#    cur.callproc("spCheckEmailExist", ())
-#    emails = cur.fetchall()
-#    cur.close() 
-
-#    ban = False
-#    for row in emails:
-#       if row['user_email'] == user_email:
-#          ban = True
-
-#    if ban:
-#       return 'A user with that email already exist'
-#    else:
-#    #    hashed = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt())
-#       hashed = user_password
-      
-#       cur = mysql.connection.cursor()
-#       cur.callproc("spInsertNewUser", [user_role_title, user_name, user_email, hashed, user_active, 
-#       pickup_line_1, pickup_line_2, pickup_city, pickup_zip_code, pickup_state, 0])
-#       mysql.connection.commit()
-
-#       cur.execute('SELECT @userId')
-#       result = cur.fetchone() 
-#       cur.close()
-
-#       return jsonify(result)
-
-
+# ENPOINTS FOR USERS TABLE-----------------------------------------------------------------------------------------------------
 # POST LOGIN USER
 @app.route('/api/user/login', methods=['POST'])
 def login_user():
@@ -536,41 +492,6 @@ def get_user(id):
 
    return jsonify(user)
 
-
-# Enpoints for products, deals table------------------------------------------------------------------------
-# POST product and deal tables
-# @app.route('/api/product/new-deal', methods=['POST'])
-# def insert_product_deal():
-#    product_user_id = request.json["userId"]
-#    product_title = request.json["title"]
-#    picture_product = request.json["thumbImage1"]
-#    product_description = request.json["description"]
-#    product_price = request.json["price"]
-#    stock_quantity = request.json["stock"]
-#    deal_shipping_type_id = request.json["shippingTypeId"]
-#    # deal_created_date = datetime.datetime.now()
-#    # deal_started_date = datetime.datetime.now()
-#    # deal_finished_date = datetime.datetime.now() + timedelta(days=1)
-
-#    deal_created_date = request.json["createdDealDate"]
-#    deal_started_date = request.json["startedDealDate"]
-#    deal_finished_date = request.json["finishedDealDate"]
-#    deal_status = request.json['dealStatus']     
-
-#    cur = mysql.connection.cursor()
-#    cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
-#    product_description, product_price, stock_quantity, deal_shipping_type_id, 
-#    deal_created_date, deal_started_date, deal_finished_date, deal_status, 0, None])
-
-#    mysql.connection.commit()
-
-#    cur.execute('SELECT @dealId, @generatedDealProductUrl')
-#    result = cur.fetchone() 
-#    cur.close()
-
-#    return jsonify(result)
-
-
 # Enpoints for shipping_type table--------------------------------------------------------------------------------
 # GET ALL shipping types
 @app.route('/api/shipping-types', methods=['GET'])
@@ -582,7 +503,6 @@ def get_shipping_types():
    cur.close()
 
    return jsonify(shipping_types)
-
 
 # Enpoints for product_deals table--------------------------------------------------------------------------------
 # GET the active deal by user and active status - for business account

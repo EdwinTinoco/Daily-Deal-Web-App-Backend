@@ -80,25 +80,28 @@ def home():
 def forgot_password(): 
    email = request.json['email']   
 
-   cur = mysql.connection.cursor()
-   cur.callproc("spCheckEmailExist", [email, "", ""])
-   cur.execute('SELECT @message, @userPassword')
-   message = cur.fetchone()  
-   cur.close() 
+   try:
+      cur = mysql.connection.cursor()
+      cur.callproc("spCheckEmailExist", [email, "", ""])
+      cur.execute('SELECT @message, @userPassword')
+      message = cur.fetchone()  
+      cur.close() 
 
-   print(message)      
+      print(message)      
 
-   if message['@message'] == "A user with that email already exist":
-      token = s.dumps(email, salt=SALT_KEY)
-      link = url_for('reset_password', token=token, _external=True)
+      if message['@message'] == "A user with that email already exist":
+         token = s.dumps(email, salt=SALT_KEY)
+         link = url_for('reset_password', token=token, _external=True)
 
-      msg = Message('Kudu Reset Password', recipients=[email])
-      msg.body = 'Your link to reset your password is {}'.format(link)
-      mail.send(msg)
+         msg = Message('Kudu Reset Password', recipients=[email])
+         msg.body = 'Your link to reset your password is {}'.format(link)
+         mail.send(msg)
 
-      return jsonify({'message': "The email sent succesfully", "token": token})    
-   else:
-      return jsonify({'message': message['@message']}) 
+         return jsonify({'message': "The email sent succesfully", "token": token})    
+      else:
+         return jsonify({'message': message['@message']}) 
+   except Exception as e:
+      return jsonify(error=str(e)), 403
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])   
 def reset_password(token):     
@@ -274,7 +277,7 @@ def fulfill_order(session):
 
    try:
       error_message = ""
-      
+
       if shipping_title == "Pick up to the store":
          cur = mysql.connection.cursor()
          cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])

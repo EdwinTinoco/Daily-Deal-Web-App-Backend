@@ -615,6 +615,12 @@ def check_stock(id):
 
    return jsonify(stock)
 
+@app.route('/api/check-stripe-sku/<id>', methods=['GET'])
+def check_stripe_sku(id):
+   stripe_sku = stripe.SKU.retrieve(id)
+
+   return jsonify(stripe_sku)
+
 
 # ENDPOINTS For business_address TABLE ---------------------------------------------------------------------------------------------------------------------
 # GET BUSINESS ADDRESS NY USER ID

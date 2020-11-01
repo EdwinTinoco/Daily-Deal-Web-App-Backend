@@ -537,10 +537,10 @@ def get_active_deal_detail(id):
    return jsonify(deal)
 
 # GET all active deals - for master admin account
-@app.route('/api/ma/all-active-deals', methods=['GET'])
-def get_all_active_deal():
+@app.route('/api/ma/all-active-deals/<currentDate>', methods=['GET'])
+def get_all_active_deal(currentDate):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetMaAllActiveDeals", ())
+   cur.callproc("spGetMaAllActiveDeals", [currentDate])
    all_deals = cur.fetchall()
    cur.close()
 

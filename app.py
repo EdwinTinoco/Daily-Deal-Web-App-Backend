@@ -483,8 +483,6 @@ def login_user():
          user = cur.fetchone()
          cur.close()
 
-         print(user)
-
          return jsonify({'message': 'Login successfully', 'user': [{'user_id': user['@userId'], 'user_email': userEmail, 'role_title': user['@userRole']}]})         
       else:
          return jsonify({'message': "Email or password is wrong"})

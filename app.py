@@ -478,14 +478,14 @@ def login_user():
 
       if bcrypt.checkpw(user_password.encode('utf-8'), hash_password.encode('utf-8')):
          cur = mysql.connection.cursor()
-         cur.callproc("spLoginUser", [userEmail, hash_password, currentDate, 0, "", 0, 0])
-         cur.execute('SELECT @uId, @uRole, @counterDate, @tempDealId')
+         cur.callproc("spLoginUser", [userEmail, hash_password, currentDate, 0, ""])
+         cur.execute('SELECT @userId, @userRole')
          user = cur.fetchone()
          cur.close()
 
          print(user)
 
-         return jsonify({'message': 'Login successfully', 'user': [{'user_id': user['@uId'], 'user_email': userEmail, 'role_title': user['@uRole']}]})         
+         return jsonify({'message': 'Login successfully', 'user': [{'user_id': user['@userId'], 'user_email': userEmail, 'role_title': user['@userRole']}]})         
       else:
          return jsonify({'message': "Email or password is wrong"})
    else:
@@ -516,11 +516,14 @@ def get_shipping_types():
 
 # Enpoints for product_deals table--------------------------------------------------------------------------------
 # GET the active deal by user and active status - for business account
-@app.route('/api/ba/deals/<id>', methods=['GET'])
-def get_active_deal(id):
+@app.route('/api/ba/deals', methods=['POST'])
+def get_active_deal():
+   userId = request.json['userId']
+   currentDate = request.json['currentDate']
+
    cur = mysql.connection.cursor()
-   cur.callproc("spGetBaDealsByUserId", [id])
-   deal = cur.fetchall()
+   cur.callproc("spGetBaDealsByUserId", [userId, currentDate])
+   deal = cur.fetchall()   
    cur.close()
 
    return jsonify(deal)
@@ -554,6 +557,23 @@ def get_product_deal_url(id):
    cur.close()   
 
    return jsonify(product_deal)
+
+# UPDATE deal_status
+# @app.route('/api/update/deals-status', methods=['POST'])
+# def update_deal_status():
+#    userId = request.json['userId']
+#    currentDate = request.json['currentDate']
+
+#    cur = mysql.connection.cursor()
+#    cur.callproc("spUpdateDealStatusByBusinessId", [userId, currentDate, "", ""])
+#    mysql.connection.commit()
+
+#    cur.execute('SELECT @message, @entro')
+#    result = cur.fetchone() 
+#    cur.close()
+
+#    return jsonify(result)
+
 
 # Enpoints for sales table--------------------------------------------------------------------------------
 # POST Check if the user already made a purchase

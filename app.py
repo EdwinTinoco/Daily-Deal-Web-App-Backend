@@ -107,7 +107,7 @@ def forgot_password():
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])   
 def reset_password(token):     
    try:
-      email = s.loads(token, salt=SALT_KEY, max_age=90)
+      email = s.loads(token, salt=SALT_KEY, max_age=3600)
 
       if request.method == 'GET':
         return f'''<form action="/reset-password/{token}" method="POST">

@@ -1,5 +1,3 @@
-secret_key.py
+db_keys.py
 stripe_keys.py
-email_key.py
-
-.env
+email_keys.py

@@ -73,7 +73,7 @@ endpoint_secret = ENPOINT_SECRET_KEY
 @app.route('/')
 def home():   
    print(HOST,MAIL_USERNAME, SALT_KEY)
-   return "<h1>kudu API</h1>"
+   return "<h1>Kudu API</h1>"
 
 # Endpoints for forgot password
 @app.route('/api/user/forgot-password', methods=['POST'])

@@ -41,10 +41,10 @@ TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # MYSQL DATABASE ENVIRONMENT VARIABLES
 # DEBUG ENVIRONMENT
-app.config['MYSQL_HOST'] = 'kududbinstance.c15tfejqq865.us-east-2.rds.amazonaws.com'
-app.config['MYSQL_USER'] = 'admin'
-app.config['MYSQL_PASSWORD'] = 'ddKudu!2020'
-app.config['MYSQL_DB'] = 'kudu_db_start'
+app.config['MYSQL_HOST'] = HOST
+app.config['MYSQL_USER'] = USER
+app.config['MYSQL_PASSWORD'] = PASSWORD
+app.config['MYSQL_DB'] = DB
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
@@ -64,8 +64,8 @@ s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # STRIPE ENVIRONMENT VARIABLES
 # DEBUG ENVIRONMENT
-stripe.api_key = 'sk_test_51HTxLRAFD2E6aSKkks0bzUK7NgVQwwYZZKwrIy1Nw0gzljAVzwFzpVtmRMzmxAmKpF8cyzNsg0Uzj9adAEO8PQ9j00ofVoa52f'
-endpoint_secret = 'whsec_hnNh4VQCfV0EQX3jU2V7TiV73zZ09CEC'
+stripe.api_key = TEST_SECRET_KEY
+endpoint_secret = ENPOINT_SECRET_KEY
 
 
 
@@ -189,8 +189,8 @@ def create_checkout_session():
             'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
-         success_url= "http://localhost:3000/success/" + sales_deal_id + '?success=true',
-         cancel_url= "http://localhost:3000/deal/product/" + sales_deal_id + '?canceled=true'
+         success_url= SUCCESS_URL + sales_deal_id + '?success=true',
+         cancel_url= CANCEL_URL + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 

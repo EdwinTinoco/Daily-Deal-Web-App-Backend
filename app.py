@@ -518,13 +518,18 @@ def get_shipping_types():
 def get_active_deal():
    userId = request.json['userId']
    currentDate = request.json['currentDate']
+   perPage = request.json['perPage']
+   off_set = request.json['offset']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spGetBaDealsByUserId", [userId, currentDate])
-   deal = cur.fetchall()   
+   cur.callproc("spGetBaDealsByUserId", [userId, currentDate, perPage, off_set, 0])
+   deals = cur.fetchall()   
+
+   cur.execute('select @total_records')
+   total_records = cur.fetchone()
    cur.close()
 
-   return jsonify(deal)
+   return jsonify({'deals': deals, 'total_records': total_records})
 
 # GET the active deal by deal_id
 @app.route('/api/active-deal/detail/<id>', methods=['GET'])
@@ -537,14 +542,21 @@ def get_active_deal_detail(id):
    return jsonify(deal)
 
 # GET all active deals - for master admin account
-@app.route('/api/ma/all-active-deals/<currentDate>', methods=['GET'])
-def get_all_active_deal(currentDate):
+@app.route('/api/ma/all-active-deals', methods=['POST'])
+def get_all_active_deal():
+   currentDate = request.json['currentDate']
+   perPage = request.json['perPage']
+   off_set = request.json['offset']
+
    cur = mysql.connection.cursor()
-   cur.callproc("spGetMaAllActiveDeals", [currentDate])
+   cur.callproc("spGetMaAllActiveDeals", [currentDate, perPage, off_set, 0])
    all_deals = cur.fetchall()
+
+   cur.execute('SELECT @total_records')
+   total_records = cur.fetchone()  
    cur.close()
 
-   return jsonify(all_deals)
+   return jsonify({'all_deals': all_deals, 'total_records': total_records})
 
 # GET product deal - contains url generated
 @app.route('/deal/product/<id>', methods=['GET'])
@@ -592,14 +604,21 @@ def check_user_purchase():
    return jsonify(result)
 
 # GET DEALS SALES DETAIL BY PRODUCT DEAL
-@app.route('/api/sales-deal/detail/<id>', methods=['GET'])
-def get_sales_deal(id):
+@app.route('/api/sales-deal/detail', methods=['POST'])
+def get_sales_deal():
+   dealId = request.json['dealId']
+   perPage = request.json['perPage']
+   off_set = request.json['offset']
+
    cur = mysql.connection.cursor()
-   cur.callproc("spGetSalesByDealId", [id])
+   cur.callproc("spGetSalesByDealId", [dealId, perPage, off_set, 0])
    sales_deal = cur.fetchall()
+
+   cur.execute('SELECT @total_records')
+   total_records = cur.fetchone()
    cur.close()
 
-   return jsonify(sales_deal)
+   return jsonify({'sales_deal': sales_deal, 'total_records': total_records})
 
 # GET CHART ALL DEALS TOTAL SALES BY BUSINESS USER ID
 @app.route('/api/ba/all-deals/totals/<id>', methods=['GET'])

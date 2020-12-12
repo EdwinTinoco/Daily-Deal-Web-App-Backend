@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, render_template
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 import bcrypt
@@ -20,17 +20,28 @@ HOST = os.environ.get("HOST")
 USER = os.environ.get("USER")
 PASSWORD = os.environ.get("PASSWORD")
 DB = os.environ.get("DB")
-MASTER_ADMIN_CODE = os.environ.get("MASTER_ADMIN_CODE")
+# MASTER_ADMIN_CODE = os.environ.get("MASTER_ADMIN_CODE")
+MASTER_ADMIN_CODE = "Kudu2020"
 
-MAIL_SERVER = os.environ.get("MAIL_SERVER")
-MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
-MAIL_PORT = os.environ.get("MAIL_PORT")
-MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL")
-MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
-URL_SAFE_SERIALIZER_KEY = os.environ.get("URL_SAFE_SERIALIZER_KEY")
-SALT_KEY = os.environ.get("SALT_KEY")
+# MAIL_SERVER = os.environ.get("MAIL_SERVER")
+# MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+# MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+# MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
+# MAIL_PORT = os.environ.get("MAIL_PORT")
+# MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL")
+# MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
+# URL_SAFE_SERIALIZER_KEY = os.environ.get("URL_SAFE_SERIALIZER_KEY")
+# SALT_KEY = os.environ.get("SALT_KEY")
+
+MAIL_SERVER = "smtp.gmail.com"
+MAIL_USERNAME = "jaredlotic@gmail.com"
+MAIL_PASSWORD = "eitaK!niwdE!2019"
+MAIL_DEFAULT_SENDER = "jaredlotic@gmail.com"
+MAIL_PORT = 465
+MAIL_USE_SSL = True
+MAIL_USE_TLS = False
+URL_SAFE_SERIALIZER_KEY = "timpusSque06!aks!Smalls!06292019"
+SALT_KEY = "Chile1!0SenOeMailgadaConfirm"
 
 TEST_SECRET_KEY = os.environ.get("TEST_SECRET_KEY")
 SUCCESS_URL = os.environ.get("SUCCESS_URL")
@@ -41,10 +52,10 @@ TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # MYSQL DATABASE ENVIRONMENT VARIABLES
 # DEBUG ENVIRONMENT
-app.config['MYSQL_HOST'] = HOST
-app.config['MYSQL_USER'] = USER
-app.config['MYSQL_PASSWORD'] = PASSWORD
-app.config['MYSQL_DB'] = DB
+app.config['MYSQL_HOST'] = "kududbinstance.c15tfejqq865.us-east-2.rds.amazonaws.com"
+app.config['MYSQL_USER'] = "admin"
+app.config['MYSQL_PASSWORD'] = "ddKudu!2020"
+app.config['MYSQL_DB'] = "db_kudu1212220"
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
@@ -64,8 +75,8 @@ s = URLSafeTimedSerializer(URL_SAFE_SERIALIZER_KEY)
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # STRIPE ENVIRONMENT VARIABLES
 # DEBUG ENVIRONMENT
-stripe.api_key = TEST_SECRET_KEY
-endpoint_secret = ENPOINT_SECRET_KEY
+stripe.api_key = "sk_test_51HTxLRAFD2E6aSKkks0bzUK7NgVQwwYZZKwrIy1Nw0gzljAVzwFzpVtmRMzmxAmKpF8cyzNsg0Uzj9adAEO8PQ9j00ofVoa52f"
+endpoint_secret = "whsec_hnNh4VQCfV0EQX3jU2V7TiV73zZ09CEC"
 
 
 
@@ -110,13 +121,7 @@ def reset_password(token):
       email = s.loads(token, salt=SALT_KEY, max_age=3600)
 
       if request.method == 'GET':
-        return f'''<form action="/reset-password/{token}" method="POST">
-         <h2>Reset Password</h2>
-         <label for="password">New Password</label>
-         <input type="password" name="password" placeholder="New Password">
-         <label for="confirm-password">Confirm New Password</label>
-         <input type="password" name="confirm-password" placeholder="Confirm New Password">
-         <input type="submit"></form>'''
+        return render_template('reset_password.html', value=token)
 
       userPassword = request.form['password']
 
@@ -189,8 +194,8 @@ def create_checkout_session():
             'shippingTypeTitle': shipping_type_title
          },
          mode='payment',
-         success_url= SUCCESS_URL + sales_deal_id + '?success=true',
-         cancel_url= CANCEL_URL + sales_deal_id + '?canceled=true'
+         success_url= "http://localhost:3000/success/" + sales_deal_id + '?success=true',
+         cancel_url= "http://localhost:3000/deal/product/" + sales_deal_id + '?canceled=true'
       )
       return jsonify({'id': checkout_session.id})
 

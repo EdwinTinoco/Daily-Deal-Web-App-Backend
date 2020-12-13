@@ -36,7 +36,7 @@ TEST_SECRET_KEY = os.environ.get("TEST_SECRET_KEY")
 SUCCESS_URL = os.environ.get("SUCCESS_URL")
 CANCEL_URL = os.environ.get("CANCEL_URL")
 ENPOINT_SECRET_KEY = os.environ.get("ENPOINT_SECRET_KEY")
-TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
+# TAX_RATE_ID = os.environ.get("TAX_RATE_ID")
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # MYSQL DATABASE ENVIRONMENT VARIABLES

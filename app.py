@@ -85,9 +85,7 @@ def forgot_password():
       cur.callproc("spCheckEmailExist", [email, "", ""])
       cur.execute('SELECT @message, @userPassword')
       message = cur.fetchone()  
-      cur.close() 
-
-      print(message)      
+      cur.close()   
 
       if message['@message'] == "A user with that email already exist":
          token = s.dumps(email, salt=SALT_KEY)
@@ -97,7 +95,7 @@ def forgot_password():
          msg.body = 'Your link to reset your password is {}'.format(link)
          mail.send(msg)
 
-         return jsonify({'message': "The email sent succesfully", "token": token})    
+         return jsonify({'message': "The email sent succesfully"})    
       else:
          return jsonify({'message': message['@message']}) 
    except Exception as e:
@@ -153,7 +151,7 @@ def reset_password(token):
 
 
 # STRIPE ENDPOINTS --------------------------------------------------------------------------------------------------------
-# POST for create de session when user is going to pay.
+# POST for create session when user is going to do a one time payment.
 @app.route('/create-session', methods=['POST'])
 def create_checkout_session():
    product_id = request.json['productId']
@@ -244,9 +242,7 @@ def my_webhook():
    # Passed signature verification
    return jsonify("Successfull events with webhooks"), 200
 
-def fulfill_order(session): 
-   print(session)
-   
+def fulfill_order(session):    
    if session['shipping'] != None:
       name = session['shipping']['name']
       line_1 = session['shipping']['address']['line1']
@@ -303,8 +299,6 @@ def fulfill_order(session):
          cur.callproc("spGetPickupAddressByDealId", [sales_deal_id])
          pickup = cur.fetchone()
          cur.close()
-
-         print(pickup)
       
          msg = Message('Kudu -- Pick the product up to the store --', recipients=[session['metadata']['customerEmail']])
          msg.body = f'''You need to pick the product up in the store {pickup['pickup_name']}
@@ -354,25 +348,18 @@ def add_product():
             name = product_title,
             description = product_description,
             type = "good"
-         )
-
-         print(product)  
-         product_stripe_id = product['id']
-         print(product_stripe_id)
+         )         
+         product_stripe_id = product['id']        
 
          price = int(float(product_price) * 100)
-
          sku = stripe.SKU.create(       
             attributes={"name": product_title}, 
             price=price,
             currency="usd",
             inventory={"type": "finite", "quantity": stock_quantity},
             product=product_stripe_id
-         )
-
-         print(sku)
-         product_stripe_sku_id = sku['id']
-         print(sku['id'])         
+         )         
+         product_stripe_sku_id = sku['id']               
 
          cur = mysql.connection.cursor()
          cur.callproc("spInsertNewDealProduct", [product_user_id, product_title, picture_product, 
@@ -423,9 +410,7 @@ def add_customer():
       cur.callproc("spCheckEmailExist", [user_email, "", ""])
       cur.execute('SELECT @message, @userPassword')
       message = cur.fetchone()  
-      cur.close() 
-
-      print(message)      
+      cur.close()   
 
       if message['@message'] == "A user with that email already exist":
          return jsonify({'message': message['@message']}) 
@@ -659,8 +644,7 @@ def get_sales_all_deals_master():
 
    return jsonify(sales_deal)
 
-
-# ENDPOINTS For product_stock TABLE -------------------------------------------------------------------------------------------------------
+# ENDPOINTS For product_stock TABLE ------------------------------------------------------------------------------------------------------------------------
 # GET how many items are in stock
 @app.route('/api/check-stock-left/<id>', methods=['GET'])
 def check_stock(id):
@@ -676,7 +660,6 @@ def check_stripe_sku(id):
    stripe_sku = stripe.SKU.retrieve(id)
 
    return jsonify(stripe_sku)
-
 
 # ENDPOINTS For business_address TABLE ---------------------------------------------------------------------------------------------------------------------
 # GET BUSINESS ADDRESS NY USER ID

@@ -124,7 +124,24 @@ def reset_password(token):
         return render_template('reset_password.html', value=token)
 
       userPassword = request.form['password']
+      userConfirmPassword = request.form['confirm_password']
 
+      if userPassword == "" or userConfirmPassword == "":
+         return f'''
+                  <div style="text-align: center;">
+                     <h2 style="color: red;">Invalid Password</h2>
+                     <a href="/reset-password/{token}">Go back to try again</a>
+                  </div>
+               '''
+      
+      if userPassword != userConfirmPassword:
+         return f'''
+                  <div style="text-align: center;">
+                     <h2 style="color: red;">Passwords don't match</h2>
+                     <a href="/reset-password/{token}">Go back to try again</a>
+                  </div>
+               '''
+      
       hashed = bcrypt.hashpw(userPassword.encode('utf-8'), bcrypt.gensalt())
 
       cur = mysql.connection.cursor()
@@ -133,9 +150,17 @@ def reset_password(token):
       cur.close()
 
    except SignatureExpired:
-      return '<h2>The reset-password link is expired!'
+      return f'''
+               <div style="text-align: center;">
+                  <h2>The reset-password link is expired!</h2>
+               </div>
+            '''
    
-   return '<h2>The password has been reseted succesfully</h2>'
+   return f'''
+            <div style="text-align: center;">
+               <h2>The password has been reseted succesfully!</h2>
+            </div>
+         '''
 
 
 # STRIPE ENDPOINTS --------------------------------------------------------------------------------------------------------

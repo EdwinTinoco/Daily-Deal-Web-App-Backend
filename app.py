@@ -523,9 +523,10 @@ def get_active_deal():
    currentDate = request.json['currentDate']
    perPage = request.json['perPage']
    off_set = request.json['offset']
+   yearSelected = request.json['yearSelected']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spGetBaDealsByUserId", [userId, currentDate, perPage, off_set, 0])
+   cur.callproc("spGetBaDealsByUserId", [userId, currentDate, perPage, off_set, yearSelected, 0])
    deals = cur.fetchall()   
 
    cur.execute('select @total_records')
@@ -550,9 +551,10 @@ def get_all_active_deal():
    currentDate = request.json['currentDate']
    perPage = request.json['perPage']
    off_set = request.json['offset']
+   yearSelected = request.json['yearSelected']
 
    cur = mysql.connection.cursor()
-   cur.callproc("spGetMaAllActiveDeals", [currentDate, perPage, off_set, 0])
+   cur.callproc("spGetMaAllActiveDeals", [currentDate, perPage, off_set, yearSelected, 0])
    all_deals = cur.fetchall()
 
    cur.execute('SELECT @total_records')
@@ -624,24 +626,36 @@ def get_sales_deal():
    return jsonify({'sales_deal': sales_deal, 'total_records': total_records})
 
 # GET CHART ALL DEALS TOTAL SALES BY BUSINESS USER ID
-@app.route('/api/ba/all-deals/totals/<id>', methods=['GET'])
-def get_sales_all_deals_business(id):
+@app.route('/api/ba/all-deals/totals', methods=['POST'])
+def get_sales_all_deals_business():
+   userId = request.json['userId']
+   yearSelected = request.json['yearToConsult']
+
    cur = mysql.connection.cursor()
-   cur.callproc("spGetBaChartAllDealsTotalsByBusinessUserId", [id])
+   cur.callproc("spGetBaChartAllDealsTotalsByBusinessUserId", [userId, yearSelected])
    sales_deal = cur.fetchall()
    cur.close()
 
    return jsonify(sales_deal)
 
-# GET CHART ALL DEALS TOTAL SALES BY MASTER ACCOUNT
-@app.route('/api/ma/all-deals/totals', methods=['GET'])
-def get_sales_all_deals_master():
+# GET CHART ALL DEALS TOTAL SALES PER MONTH BY MASTER ACCOUNT
+@app.route('/api/ma/chart/totals-sales-month/<yearSelected>', methods=['GET'])
+def get_chart_sales_all_deals_master(yearSelected):
    cur = mysql.connection.cursor()
-   cur.callproc("spGetMaChartAllDealsTotalsByMasterAccount", ())
+   cur.callproc("spGetMaChartAllDealsTotalsByMasterAccount", [yearSelected])
    sales_deal = cur.fetchall()
    cur.close()
 
    return jsonify(sales_deal)
+
+@app.route('/api/ma/panel/total-sales-business/<yearSelected>', methods=['GET'])
+def get_panel_total_sales(yearSelected):
+   cur = mysql.connection.cursor()
+   cur.callproc("spGetMaPanelTotalSalesBusiness", [yearSelected])
+   total_sales = cur.fetchall()
+   cur.close()
+
+   return jsonify(total_sales)
 
 # ENDPOINTS For product_stock TABLE ------------------------------------------------------------------------------------------------------------------------
 # GET how many items are in stock

@@ -16,26 +16,26 @@ heroku = Heroku(app)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 #Enviroment Variables
-HOST = "kududbinstance.c15tfejqq865.us-east-2.rds.amazonaws.com"
-USER = "admin"
-PASSWORD = "ddKudu!2020"
-DB = "kudu_db_12302020"
-MASTER_ADMIN_CODE = "Kudu2020"
+HOST = os.environ.get("HOST")
+USER = os.environ.get("USER")
+PASSWORD = os.environ.get("PASSWORD")
+DB = os.environ.get("DB")
+MASTER_ADMIN_CODE = os.environ.get("MASTER_ADMIN_CODE")
 
-MAIL_SERVER = "smtp.gmail.com"
-MAIL_USERNAME = "jaredlotic@gmail.com"
-MAIL_PASSWORD = "KAT@!princeSS!19"
-MAIL_DEFAULT_SENDER = "jaredlotic@gmail.com"
-MAIL_PORT = 465
-MAIL_USE_SSL = True
-MAIL_USE_TLS = False
-URL_SAFE_SERIALIZER_KEY = "toDO20oN!a!D!A05"
-SALT_KEY = "cuAnDO!lAluNa!Se!Pone!graNDotoTa82"
+MAIL_SERVER = os.environ.get("MAIL_SERVER")
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
+MAIL_PORT = os.environ.get("MAIL_PORT")
+MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL")
+MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
+URL_SAFE_SERIALIZER_KEY = os.environ.get("URL_SAFE_SERIALIZER_KEY")
+SALT_KEY = os.environ.get("SALT_KEY")
 
-TEST_SECRET_KEY = "sk_test_51HTxLRAFD2E6aSKkks0bzUK7NgVQwwYZZKwrIy1Nw0gzljAVzwFzpVtmRMzmxAmKpF8cyzNsg0Uzj9adAEO8PQ9j00ofVoa52f"
-SUCCESS_URL = "http://localhost:3000/success/"
-CANCEL_URL = "http://localhost:3000/deal/product/"
-ENPOINT_SECRET_KEY = "whsec_hnNh4VQCfV0EQX3jU2V7TiV73zZ09CEC"
+TEST_SECRET_KEY = os.environ.get("TEST_SECRET_KEY")
+SUCCESS_URL = os.environ.get("SUCCESS_URL")
+CANCEL_URL = os.environ.get("CANCEL_URL")
+ENPOINT_SECRET_KEY = os.environ.get("ENPOINT_SECRET_KEY")
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 # MYSQL DATABASE ENVIRONMENT VARIABLES
